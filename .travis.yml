@@ -1,9 +1,11 @@
-sudo: true
+sudo: false
 language: python
+
 python:
   - "3.6"
   - "3.7"
 before_install:
-  - pip install pytest-pep8
+  - pip install pytest-pep8 pytest-cov astropy
+
 install: python setup.py build
 script: python setup.py test --addopts='--pep8'
