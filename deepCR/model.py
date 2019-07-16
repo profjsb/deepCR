@@ -26,7 +26,7 @@ class deepCR():
             self.dtype = torch.FloatTensor
             self.dint = torch.ByteTensor
             wrapper = WrappedModel
-        model_dir = path.join(path.dirname(__file__)[:-6], 'model')
+        model_dir = path.join(path.dirname(__file__), 'model')
 
         if mask is not None:
             self.maskNet = wrapper(mask_dict[mask][0](*mask_dict[mask][1]))
