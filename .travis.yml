@@ -1,9 +1,15 @@
-sudo: true
+sudo: false
 language: python
+
 python:
   - "3.6"
   - "3.7"
 before_install:
-  - pip install pytest-pep8
-install: python setup.py build
+  - pip install --upgrade pip setuptools wheel
+  - pip install --only-binary=numpy,scipy numpy scipy
+  - pip install pytest-pep8 pytest-cov astropy drizzlepac MarkupSafe astroscrappy
+
+install: 
+  - python setup.py build
+
 script: python setup.py test --addopts='--pep8'
