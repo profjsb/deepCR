@@ -31,7 +31,11 @@ class deepCR():
         if mask is not None:
             self.maskNet = wrapper(mask_dict[mask][0](*mask_dict[mask][1]))
             self.maskNet.type(self.dtype)
-            self.maskNet.load_state_dict(torch.load(model_dir + '/mask/' + mask + '.pth'))
+            if device != 'GPU':
+                self.maskNet.load_state_dict(torch.load(model_dir + '/mask/' + mask + '.pth',
+                                                        map_location='cpu'))
+            else:
+                self.maskNet.load_state_dict(torch.load(model_dir + '/mask/' + mask + '.pth'))
 
             self.maskNet.eval()
             for p in self.maskNet.parameters():
@@ -41,7 +45,11 @@ class deepCR():
             self.inpaintNet = None
         else:
             self.inpaintNet = wrapper(inpaint_dict[inpaint][0](*inpaint_dict[inpaint][1])).type(self.dtype)
-            self.inpaintNet.load_state_dict(torch.load(model_dir+'/inpaint/' + inpaint+'.pth'))
+            if device != 'GPU':
+                self.inpaintNet.load_state_dict(torch.load(model_dir+'/inpaint/' + inpaint+'.pth',
+                                                           map_location='cpu'))
+            else:
+                self.inpaintNet.load_state_dict(torch.load(model_dir+'/inpaint/' + inpaint+'.pth'))
             self.inpaintNet.eval()
             for p in self.inpaintNet.parameters():
                 p.required_grad = False

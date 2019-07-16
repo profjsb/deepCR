@@ -1,4 +1,4 @@
-import torch.nn.functional as F
+from torch import sigmoid
 from deepCR.parts import *
 
 
@@ -15,7 +15,7 @@ class UNet2Sigmoid(nn.Module):
         x2 = self.down1(x1)
         x = self.up8(x2, x1)
         x = self.outc(x)
-        return F.sigmoid(x)
+        return sigmoid(x)
 
 
 class UNet2(nn.Module):
