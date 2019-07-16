@@ -4,7 +4,6 @@ import numpy as np
 
 from .. import model
 
-
 def test_deepCR():
 
     mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
