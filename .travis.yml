@@ -5,7 +5,8 @@ python:
   - "3.6"
   - "3.7"
 before_install:
-  - pip install pytest-pep8 pytest-cov astropy
+  - pip install pytest-pep8 pytest-cov astropy drizzlepac MarkupSafe
 
 install: python setup.py build
+
 script: python setup.py test --addopts='--pep8'
