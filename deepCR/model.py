@@ -1,23 +1,46 @@
+from os import path
+
 import numpy as np
 import torch
 import torch.nn as nn
 from torch import from_numpy
-from deepCR.unet import *
-from deepCR.util import *
-from os import path
 
-__all__ = ('mask_dict', 'inpaint_dict', 'deepCR')
+from deepCR.unet import WrappedModel
+from deepCR.util import medmask
+from learned_models import mask_dict, inpaint_dict, default_model_path
 
-mask_dict = {'ACS-WFC-F606W-2-32': [UNet2Sigmoid, (1, 1, 32)],
-             'ACS-WFC-F606W-2-4': [UNet2Sigmoid, (1, 1, 4)]}
-
-inpaint_dict = {'ACS-WFC-F606W-3-32': [UNet3, (2, 1, 32)],
-                'ACS-WFC-F606W-2-32': [UNet2, (2, 1, 32)],
-                'ACS-WFC-F606W-2-8': [UNet2, (2, 1, 8)]}
+__all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
 
 
 class deepCR():
-    def __init__(self, mask=None, inpaint='medmask', device='CPU'):
+
+    def __init__(self, mask=None, inpaint='medmask', device='CPU',
+                 model_dir=default_model_path):
+
+        """model class instantiation for deepCR. Here is the
+    declaration of the learned mask and inpainting models
+    to be used on images
+
+    Parameters
+    ----------
+    mask : str
+        Name of the mask to use. This is one of the keys in
+        `mask_dict`
+    inpaint : str
+        Name of the inpainting model to use. This is one of the keys in
+        `inpaint_dict`. It can also be `medmask` which will then
+        use a simple 5x5 median mask for inpainting
+    device : str
+        One of 'CPU' or 'GPU'
+    model_dir : str
+        The location of the model directory with the mask/ and inpaint/
+        subdirectories. This defaults to where the pre-shipped
+        models live (in `learned_models/`)
+
+    Returns
+    -------
+    None
+        """
         if(device == 'GPU'):
             self.dtype = torch.cuda.FloatTensor
             self.dint = torch.cuda.ByteTensor
@@ -26,7 +49,6 @@ class deepCR():
             self.dtype = torch.FloatTensor
             self.dint = torch.ByteTensor
             wrapper = WrappedModel
-        model_dir = path.join(path.dirname(__file__)[:-6], 'model')
 
         if mask is not None:
             self.maskNet = wrapper(mask_dict[mask][0](*mask_dict[mask][1]))
