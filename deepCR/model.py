@@ -1,6 +1,7 @@
 from os import path
 
 import numpy as np
+import math
 import torch
 import torch.nn as nn
 from torch import from_numpy
@@ -76,14 +77,31 @@ class deepCR():
             for p in self.inpaintNet.parameters():
                 p.required_grad = False
 
-    def clean(self, img0, threshold=0.5, inpaint=True, binary=True):
+    def clean(self, img0, threshold=0.5, inpaint=True, binary=True, seg=0):
+        """
+            helper function to pass img0 to either
+            self.clean_single()
+            or
+            self.clean_seg()
+        :param img0 (np.ndarray): 2D input image
+        :param threshold: for creating binary mask from probablistic mask
+        :param inpaint: return clean image only if True
+        :param binary: return binary mask if True. probabilistic mask otherwise.
+        :return: mask or binary mask; or None if internal call
+        """
+        if seg==0:
+            return self.clean_(img0, threshold=threshold, inpaint=inpaint, binary=binary)
+        else:
+            return self.clean_large(img0, threshold=threshold, inpaint=inpaint, binary=binary, seg=seg)
+
+    def clean_(self, img0, threshold=0.5, inpaint=True, binary=True):
 
         """
             given input image
             return cosmic ray mask and (optionally) clean image
-            mask could be binary or probablistic
-        :param img0 (np.ndarray): 2D input image
-        :param threshold: for creating binary mask from probablistic mask
+            mask could be binary or probabilistic
+        :param img0: (np.ndarray) 2D input image
+        :param threshold: for creating binary mask from probabilistic mask
         :param inpaint: return clean image only if True
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :return: mask or binary mask; or None if internal call
@@ -111,18 +129,56 @@ class deepCR():
                 img1 = medmask(img0, binary_mask)
                 inpainted = img1 * binary_mask + img0 * (1 - binary_mask)
 
+
             if binary:
-                return (binary_mask, inpainted)
+                return binary_mask, inpainted
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return (mask, inpainted)
+                return mask, inpainted
 
         else:
             if binary:
+                binary_mask = binary_mask.detach().cpu().view(shape[0], shape[1]).numpy()
                 return binary_mask
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
                 return mask
+
+    def clean_large(self, img0, threshold=0.5, inpaint=True, binary=True, seg=256):
+
+        """
+            given input image
+            return cosmic ray mask and (optionally) clean image
+            mask could be binary or probabilistic
+        :param img0: (np.ndarray) 2D input image
+        :param threshold: for creating binary mask from probabilistic mask
+        :param inpaint: return clean image only if True
+        :param binary: return binary mask if True. probabilistic mask otherwise.
+        :return: mask or binary mask; or None if internal call
+        """
+        im_shape = img0.shape
+        hh = int(math.ceil(im_shape[0]/seg)); ww = int(math.ceil(im_shape[1]/seg))
+
+        img0 = np.pad(img0, 3, 'constant')
+        img1 = np.zeros((im_shape[0], im_shape[1]))
+        mask = np.zeros((im_shape[0], im_shape[1]))
+
+        if inpaint:
+            for i in range(hh):
+                for j in range(ww):
+                    img = img0[i * seg:(i + 1) * seg + 6, j * seg:(j + 1) * seg + 6]
+                    mask_, clean_ = self.clean_(img, threshold=threshold, inpaint=True, binary=binary)
+                    mask[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = mask_[3:-3, 3:-3]
+                    img1[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = clean_[3:-3, 3:-3]
+            return mask, img1
+
+        else:
+            for i in range(hh):
+                for j in range(ww):
+                    img = img0[i * seg:(i + 1) * seg + 6, j * seg:(j + 1) * seg + 6]
+                    mask_ = self.clean_(img, threshold=threshold, inpaint=False, binary=binary)
+                    mask[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = mask_[3:-3, 3:-3]
+            return mask
 
     def inpaint(self, img0, mask):
 
@@ -149,3 +205,4 @@ class deepCR():
             inpainted = img1 * mask + img0 * (1 - mask)
 
         return inpainted
+
