@@ -10,6 +10,9 @@ from joblib import Parallel, delayed
 from joblib import dump, load
 from joblib import wrap_non_picklable_objects
 
+from tqdm import tqdm
+
+
 from deepCR.unet import WrappedModel
 from deepCR.util import medmask
 from learned_models import mask_dict, inpaint_dict, default_model_path
@@ -249,7 +252,7 @@ class deepCR():
         mask = np.zeros((im_shape[0], im_shape[1]))
 
         if inpaint:
-            for i in range(hh):
+            for i in tqdm(range(hh)):
                 for j in range(ww):
                     img = img0[i * seg:(i + 1) * seg + 6, j * seg:(j + 1) * seg + 6]
                     mask_, clean_ = self.clean_(img, threshold=threshold, inpaint=True, binary=binary)
@@ -258,7 +261,7 @@ class deepCR():
             return mask, img1
 
         else:
-            for i in range(hh):
+            for i in tqdm(range(hh)):
                 for j in range(ww):
                     img = img0[i * seg:(i + 1) * seg + 6, j * seg:(j + 1) * seg + 6]
                     mask_ = self.clean_(img, threshold=threshold, inpaint=False, binary=binary)
