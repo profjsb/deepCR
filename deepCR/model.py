@@ -106,12 +106,21 @@ class deepCR():
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :return: mask or binary mask; or None if internal call
         """
+        shape = img0.shape
+        pad_x = 4 - shape[0] % 4
+        pad_y = 4 - shape[1] % 4
+        if pad_x == 4:
+            pad_x = 0
+        if pad_y == 4:
+            pad_y = 0
+        img0 = np.pad(img0, ((pad_x, 0), (pad_y, 0)), mode='constant')
+
         shape = img0.shape[-2:]
         img0 = from_numpy(img0).type(self.dtype).view(1, -1, shape[0], shape[1])
         mask = self.maskNet(img0)
 
         if not binary:
-            return mask.detach().cpu().view(shape[0], shape[1]).numpy()
+            return mask.detach().cpu().view(shape[0], shape[1]).numpy()[pad_x:, pad_y:]
 
         binary_mask = (mask > threshold).type(self.dtype)
 
@@ -131,18 +140,18 @@ class deepCR():
 
 
             if binary:
-                return binary_mask, inpainted
+                return binary_mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:]
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return mask, inpainted
+                return mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:]
 
         else:
             if binary:
                 binary_mask = binary_mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return binary_mask
+                return binary_mask[pad_x:, pad_y:]
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return mask
+                return mask[pad_x:, pad_y:]
 
     def clean_large(self, img0, threshold=0.5, inpaint=True, binary=True, seg=256):
 
