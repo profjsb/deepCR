@@ -1,10 +1,14 @@
-from os import path
+from os import path, mkdir
+import math
 
 import numpy as np
-import math
+import joblib
 import torch
 import torch.nn as nn
 from torch import from_numpy
+from joblib import Parallel, delayed
+from joblib import dump, load
+from joblib import wrap_non_picklable_objects
 
 from deepCR.unet import WrappedModel
 from deepCR.util import medmask
@@ -77,7 +81,8 @@ class deepCR():
             for p in self.inpaintNet.parameters():
                 p.required_grad = False
 
-    def clean(self, img0, threshold=0.5, inpaint=True, binary=True, seg=0):
+    def clean(self, img0, threshold=0.5, inpaint=True, binary=True,
+              seg=0, parallel=False, n_jobs=-1):
         """
             helper function to pass img0 to either
             self.clean_single()
@@ -90,9 +95,16 @@ class deepCR():
         :return: mask or binary mask; or None if internal call
         """
         if seg==0:
-            return self.clean_(img0, threshold=threshold, inpaint=inpaint, binary=binary)
+            return self.clean_(img0, threshold=threshold,
+                               inpaint=inpaint, binary=binary)
         else:
-            return self.clean_large(img0, threshold=threshold, inpaint=inpaint, binary=binary, seg=seg)
+            if not parallel:
+                return self.clean_large(img0, threshold=threshold,
+                               inpaint=inpaint, binary=binary, seg=seg)
+            else:
+                return self.clean_large_parallel(img0, threshold=threshold,
+                               inpaint=inpaint, binary=binary, seg=seg,
+                               n_jobs=n_jobs)
 
     def clean_(self, img0, threshold=0.5, inpaint=True, binary=True):
 
@@ -153,7 +165,71 @@ class deepCR():
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
                 return mask[pad_x:, pad_y:]
 
-    def clean_large(self, img0, threshold=0.5, inpaint=True, binary=True, seg=256):
+    def clean_large_parallel(self, img0, threshold=0.5, inpaint=True, binary=True,
+                    seg=256, n_jobs=-1):
+
+        folder = './joblib_memmap'
+        try:
+            mkdir(folder)
+        except FileExistsError:
+            pass
+
+
+        im_shape = img0.shape
+        img0_dtype = img0.dtype
+        hh = int(math.ceil(im_shape[0]/seg))
+        ww = int(math.ceil(im_shape[1]/seg))
+
+        img0 = np.pad(img0, 3, 'constant')
+
+        img0_filename_memmap = path.join(folder, 'img0_memmap')
+        dump(img0, img0_filename_memmap)
+        img0 = load(img0_filename_memmap, mmap_mode='r')
+
+        if inpaint:
+            img1_filename_memmap = path.join(folder, 'img1_memmap')
+            img1 = np.memmap(img1_filename_memmap, dtype=img0.dtype,
+                            shape=im_shape, mode='w+')
+        else:
+            img1 = None
+
+        mask_filename_memmap = path.join(folder, 'mask_memmap')
+        mask = np.memmap(mask_filename_memmap, dtype=np.int8 if binary else img0_dtype,
+                           shape=im_shape, mode='w+')
+
+        @wrap_non_picklable_objects
+        def fill_values(i, j, img0, img1, mask, seg, inpaint, threshold, binary):
+            img = img0[i * seg:(i + 1) * seg + 6, j * seg:(j + 1) * seg + 6]
+            if inpaint:
+                mask_, clean_ = self.clean_(img, threshold=threshold, inpaint=True, binary=binary)
+                mask[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = mask_[3:-3, 3:-3]
+                img1[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = clean_[3:-3, 3:-3]
+            else:
+                mask_ = self.clean_(img, threshold=threshold, inpaint=False, binary=binary)
+                mask[i*seg:(i+1)*seg, j*seg:(j+1)*seg] = mask_[3:-3, 3:-3]
+
+        results = Parallel(n_jobs=n_jobs, verbose=0)\
+                   (delayed(fill_values)(i, j, img0, img1, mask, seg, inpaint, threshold, binary)
+                    for i in range(hh) for  j in range(ww))
+
+        mask = np.array(mask)
+        if inpaint:
+            img1 = np.array(img1)
+
+        try:
+            shutil.rmtree(folder)
+        except:
+            print('Could not clean-up automatically.')
+
+        if inpaint:
+            return mask, img1
+        else:
+            return mask
+
+
+
+    def clean_large(self, img0, threshold=0.5, inpaint=True, binary=True,
+                    seg=256):
 
         """
             given input image
@@ -166,7 +242,8 @@ class deepCR():
         :return: mask or binary mask; or None if internal call
         """
         im_shape = img0.shape
-        hh = int(math.ceil(im_shape[0]/seg)); ww = int(math.ceil(im_shape[1]/seg))
+        hh = int(math.ceil(im_shape[0]/seg))
+        ww = int(math.ceil(im_shape[1]/seg))
 
         img0 = np.pad(img0, 3, 'constant')
         img1 = np.zeros((im_shape[0], im_shape[1]))
