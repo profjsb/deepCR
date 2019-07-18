@@ -50,5 +50,7 @@ def test_seg():
 
 
 #if __name__ == '__main__':
-#    test_deepCR()
+#    test_deepCR_serial()
+#    test_deepCR_parallel()
 #    test_seg()
+
