@@ -227,7 +227,6 @@ class deepCR():
             return mask
 
 
-
     def clean_large(self, img0, threshold=0.5, inpaint=True, binary=True,
                     seg=256):
 
