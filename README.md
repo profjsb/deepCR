@@ -2,10 +2,22 @@
 
 ## deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
 
-Apply a learned DL model to a 2d `numpy` array to remove
-cosmic rays.
+Apply a learned convolutional neural net (CNN) model to a 2d `numpy` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
 
-Code which accompanies the paper: Zhang & Bloom (2019).
+<img src="imgs/postage-sm.jpg" wdith="90%">
+
+
+This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted. All figures and speed/scoring benchmarks relative to existing solutions can be found in the paper Github repo: https://github.com/kmzzhang/deepCR-paper
+
+### Quick Start
+
+```python
+from deepCR import model
+mdl = model.deepCR(mask="ACS-WFC-F606W-2-4",
+	               inpaint="ACS-WFC-F606W-2-32",
+                   device="GPU")
+mask, cleaned_image = mdl.clean(image)
+```
 
 ### Installation
 
@@ -13,18 +25,18 @@ Code which accompanies the paper: Zhang & Bloom (2019).
 pip install deepCR
 ```
 
-Or you can install from source
+Or you can install from source:
 
 ```
+git clone https://github.com/profjsb/deepCR.git
+cd deepCR/
 python setup.py install
 ```
 
-### Usage
+### Limitations and Caveats
 
-```
-FIXME
-```
+In the current release, the included models have been built and tested only on ACS Hubble Space Telescope (HST) images in the F606W filter. Application to native-resolution flattened images from ACS/F606W (*_flt.fits) should work well. Use of these prepackaged models in other observing modes with HST, ground-based images, or spectroscopy is not encouraged. However, we expect the method implemented herein to work on such data with sufficient training data.
 
 ### Contributing
 
-We are very interested in getting bug fixes, new functionality, and new models from the community. Please fork this repo and issue a PR with your changes. It will be especially helpful if you add some tests for your changes. 
+We are very interested in getting bug fixes, new functionality, and new models from the community (built especially on ground-based imaging and spectroscopy). Please fork this repo and issue a PR with your changes. It will be especially helpful if you add some tests for your changes. 
