@@ -95,6 +95,9 @@ class deepCR():
         :param threshold: for creating binary mask from probablistic mask
         :param inpaint: return clean image only if True
         :param binary: return binary mask if True. probabilistic mask otherwise.
+        :param seg: blocksize to apply models on
+        :param parallel: run in parallel if True and seg > 0
+        :param n_jobs number of jobs to run in parallel, passed to `joblib`
         :return: mask or binary mask; or None if internal call
         """
         if seg==0:

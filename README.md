@@ -11,6 +11,8 @@ This is the installable package which implements the methods described in the pa
 
 ### Quick Start
 
+With Python >=3.5:
+
 ```python
 from deepCR import model
 mdl = model.deepCR(mask="ACS-WFC-F606W-2-4",
@@ -21,13 +23,13 @@ mask, cleaned_image = mdl.clean(image)
 
 ### Installation
 
-```
+```bash
 pip install deepCR
 ```
 
 Or you can install from source:
 
-```
+```bash
 git clone https://github.com/profjsb/deepCR.git
 cd deepCR/
 python setup.py install
@@ -35,7 +37,13 @@ python setup.py install
 
 ### Limitations and Caveats
 
-In the current release, the included models have been built and tested only on ACS Hubble Space Telescope (HST) images in the F606W filter. Application to native-resolution flattened images from ACS/F606W (*_flt.fits) should work well. Use of these prepackaged models in other observing modes with HST, ground-based images, or spectroscopy is not encouraged. However, we expect the method implemented herein to work on such data with sufficient training data.
+In the current release, the included models have been built and tested only on ACS Hubble Space Telescope (HST) images in the F606W filter. Application to native-resolution flattened images from ACS/F606W (`*_flt.fits`) should work well. Use of these prepackaged models in other observing modes with HST, ground-based images, or spectroscopy is not encouraged. However, we expect the method implemented herein to work on such data with sufficient training data.
+
+You will need to run your model on arrays which have the same bite ordering as the native machine. Some FITS readers do not switch bit order automatically. In this case, you can ask `numpy` to switch. For instance,
+
+```python
+out = mdl.clean(my_hst_image.astype("<f4"))
+```
 
 ### Contributing
 
