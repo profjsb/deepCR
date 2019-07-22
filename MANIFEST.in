@@ -1,3 +1,5 @@
 include *.txt
+include README.md
 graft learned_models
+graft imgs
 recursive-include docs *.txt

@@ -4,7 +4,7 @@
 
 Apply a learned convolutional neural net (CNN) model to a 2d `numpy` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
 
-<img src="imgs/postage-sm.jpg" wdith="90%">
+<img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
 
 This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted. All figures and speed/scoring benchmarks relative to existing solutions can be found in the paper Github repo: https://github.com/kmzzhang/deepCR-paper
