@@ -3,4 +3,5 @@ scipy
 torch
 sphinx
 sphinx_rtd_theme
+astropy
 
