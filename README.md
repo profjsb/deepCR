@@ -31,10 +31,11 @@ python setup.py install
 
 With Python >=3.5:
 
+For smaller sized images
 ```python
 from deepCR import deepCR
 from astropy.io import fits
-image = fits.getdata("example_flc.fits")
+image = fits.getdata("example_flc.fits")[:512,:512]
 
 # create an instance of deepCR with specified model configuration
 mdl = deepCR(mask="ACS-WFC-F606W-2-32",
@@ -53,11 +54,21 @@ mask = mdl.clean(image, threshold = 0.5, inpaint=False)
 prob_mask = mdl.clean(image, binary=False)
 ```
 
-To reduce memory consumption (recommended for images larger 0.5 Mpix), you can tell deepCR to segment the input image into 256*256 patches, and process one patch at a time.
+For WFC full size images (4k * 2k), you should specify *segment = True* to tell deepCR to segment the input image into 256*256 patches, and process one patch at a time.
+Otherwise this would take up > 10gb memory. We recommended you use segment = True for images larger than 1k * 1k on CPU. GPU memory limits may be more strict.
 ```python
 mask, cleaned_image = mdl.clean(image, threshold = 0.5, segment = True)
 mask = mdl.clean(image, threshold = 0.5, segment = True)
 ```
+
+(CPU only) In place of segment = True, you can also specify *parallel = True* and invoke the multi-threaded version of *segment = True*. This will speed things up. You don't have to specify segment = True again.
+```python
+mask, cleaned_image = mdl.clean(image, threshold = 0.5, parallel = True, n_jobs=-1)
+mask = mdl.clean(image, threshold = 0.5, parallel = True, n_jobs=-1)
+```
+n_jobs=-1 makes use of all your CPU cores.
+
+Note that this won't speed things up if you're using GPU!
 
 ### Currently available models
 
