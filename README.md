@@ -22,7 +22,7 @@ Or you can install from source:
 ```bash
 git clone https://github.com/profjsb/deepCR.git
 cd deepCR/
-pip install
+python setup.py install
 ```
 
 ### Quick Start

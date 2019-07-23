@@ -1,19 +1,5 @@
-deepCR package
+API documentation
 ==============
-
-Submodules
-----------
-
-deepCR.model module
--------------------
-
-.. automodule:: deepCR.model
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
 
 .. automodule:: deepCR
    :members:
