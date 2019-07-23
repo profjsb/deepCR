@@ -1,5 +1,3 @@
-numpy
-scipy
 torch
 sphinx
 sphinx_rtd_theme
