@@ -55,8 +55,8 @@ prob_mask = mdl.clean(image, binary=False)
 
 To reduce memory consumption (recommended for images larger 0.5 Mpix), you can tell deepCR to segment the input image into 256*256 patches, and process one patch at a time.
 ```python
-mask, cleaned_image = mdl.clean(image, threshold = 0.5, seg = True)
-mask = mdl.clean(image, threshold = 0.5, seg = True)
+mask, cleaned_image = mdl.clean(image, threshold = 0.5, segment = True)
+mask = mdl.clean(image, threshold = 0.5, segment = True)
 ```
 
 ### Currently available models
@@ -75,7 +75,7 @@ inpaint:
 
 Recommended models are marked in (*). Larger number indicate larger capacity and better performance.
 
-Input images should come from _flc.fits files which are in units of electrons.
+Input images should come from *_flc.fits* files which are in units of electrons.
 
 
 ### API Documentation

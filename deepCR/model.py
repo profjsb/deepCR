@@ -87,7 +87,7 @@ class deepCR():
         """
             Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
         :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from _flc.fits and in units of electrons in native resolution.
-        :param threshold: (float) applied to probabilistic mask to generate binary mask
+        :param threshold: (float; [0, 1]) applied to probabilistic mask to generate binary mask
         :param inpaint: (bool) return clean, inpainted image only if True
         :param binary: return binary CR mask if True. probabilistic mask if False
         :param segment: (bool) if True, segment input image into chunks of patch * patch before performing CR rejection. Used for memory control.
