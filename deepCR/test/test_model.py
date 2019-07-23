@@ -42,7 +42,7 @@ def test_deepCR_parallel():
 
 def test_seg():
     mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
-    in_im = np.ones((4000, 4000))
+    in_im = np.ones((2000, 2000))
     out = mdl.clean(in_im, segment=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
     out = mdl.clean(in_im, inpaint=False, segment=True)
