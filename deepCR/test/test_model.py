@@ -22,7 +22,7 @@ def test_deepCR_parallel():
 
     mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
     in_im = np.ones((299, 299))
-    out = mdl.clean(in_im, parallel=True, seg=True)
+    out = mdl.clean(in_im, parallel=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
 
     # Is the serial runtime slower than the parallel runtime on a big image?
@@ -31,19 +31,24 @@ def test_deepCR_parallel():
     if os.cpu_count() > 2:
         in_im = np.ones((3096, 2000))
         t0 = time.time()
-        out = mdl.clean(in_im, inpaint=False, parallel=True, seg=True)
+        out = mdl.clean(in_im, inpaint=False, parallel=True)
         par_runtime = time.time() - t0
         assert out.shape == in_im.shape
 
         t0 = time.time()
-        out = mdl.clean(in_im, inpaint=False, parallel=False, seg=True)
+        out = mdl.clean(in_im, inpaint=False, parallel=False)
         ser_runtime = time.time() - t0
         assert par_runtime < ser_runtime
 
 def test_seg():
     mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
     in_im = np.ones((4000, 4000))
-    out = mdl.clean(in_im, seg=True)
+    out = mdl.clean(in_im, segment=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
-    out = mdl.clean(in_im, inpaint=False, seg=256)
+    out = mdl.clean(in_im, inpaint=False, segment=True)
     assert out.shape == in_im.shape
+
+if __name__ == '__main__':
+    test_seg()
+    test_deepCR_parallel()
+    test_deepCR_serial()

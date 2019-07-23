@@ -47,7 +47,7 @@ class deepCR():
         -------
         None
             """
-        ifdevice == 'GPU':
+        if device == 'GPU':
             self.dtype = torch.cuda.FloatTensor
             self.dint = torch.cuda.ByteTensor
             wrapper = nn.DataParallel
@@ -100,7 +100,7 @@ class deepCR():
         # data pre-processing
         img0 = img0.astype(np.float32) / 100
 
-        if not segment:
+        if not segment and not parallel:
             return self.clean_(img0, threshold=threshold,
                                inpaint=inpaint, binary=binary)
         else:
