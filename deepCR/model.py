@@ -100,8 +100,6 @@ class deepCR():
         :param n_jobs number of jobs to run in parallel, passed to `joblib`
         :return: mask or binary mask; or None if internal call
         """
-        # data proprocessing
-        img0 = img0.astype(np.float32)/100
         if seg==0:
             return self.clean_(img0, threshold=threshold,
                                inpaint=inpaint, binary=binary)
