@@ -14,6 +14,10 @@ deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
    :target: https://codecov.io/gh/profjsb/deepCR
    :alt: codecov
 
+.. image:: https://readthedocs.org/projects/deepcr/badge/?version=latest
+:target: https://deepcr.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 Welcome to the documentation for `deepCR`. You will use `deepCR` to apply a learned convolutional neural net (CNN) model to a 2d ``numpy`` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
 
 .. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg

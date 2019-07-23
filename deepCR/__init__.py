@@ -13,4 +13,4 @@ from deepCR.model import deepCR
 
 __all__ = model.__all__
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
