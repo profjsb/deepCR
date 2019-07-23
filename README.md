@@ -49,13 +49,19 @@ which segments the input image into patches of 256*256, seperately perform CR re
 
 ### Currently available models
 
-mask: ACS-WFC-F606W-2-4
-      ACS-WFC-F606W-2-32(*)
+mask:
+    ACS-WFC-F606W-2-4
+    ACS-WFC-F606W-2-32(*)
 
-inpaint: ACS-WFC-F606W-2-32
-         ACS-WFC-F606W-3-32(*)
+inpaint:
+    ACS-WFC-F606W-2-32
+    ACS-WFC-F606W-3-32(*)
 
 The two numbers following instrument configuration specifies model size, with larger number indicating better performing model at the expense of runtime. Recommanded models are marked in (*). For benchmarking of these models, please refer to the original paper.
+
+### API Documentation
+
+Documentation is under development at: https://deepcr.readthedocs.io/en/latest/deepCR.html
 
 ### Limitations and Caveats
 

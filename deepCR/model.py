@@ -2,7 +2,6 @@
 """
 from os import path, mkdir
 import math
-
 import numpy as np
 import joblib
 import torch
@@ -24,7 +23,7 @@ __all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
 
 class deepCR():
 
-    def __init__(self, mask=None, inpaint='medmask', device='CPU',
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint='medmask', device='CPU',
                  model_dir=default_model_path):
 
         """model class instantiation for deepCR. Here is the
@@ -34,7 +33,7 @@ class deepCR():
     Parameters
     ----------
     mask : str
-        Name of the mask to use. This is one of the keys in
+        Name of deepCR-mask model to use. This is one of the keys in
         `mask_dict`
     inpaint : str
         Name of the inpainting model to use. This is one of the keys in
@@ -89,17 +88,14 @@ class deepCR():
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True,
               seg=0, parallel=False, n_jobs=-1):
         """
-            helper function to pass img0 to either
-            self.clean_single()
-            or
-            self.clean_seg()
-        :param img0 (np.ndarray): 2D input image
-        :param threshold: for creating binary mask from probablistic mask
-        :param inpaint: return clean image only if True
-        :param binary: return binary mask if True. probabilistic mask otherwise.
-        :param seg: blocksize to apply models on
+            Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
+        :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from _flc.fits and in units of electrons in native resolution.
+        :param threshold: (float) applied to probabilistic mask to generate binary mask
+        :param inpaint: (bool) return clean, inpainted image only if True
+        :param binary: return binary CR mask if True. probabilistic mask if False
+        :param seg: for large input images, blocksize to apply models on
         :param parallel: run in parallel if True and seg > 0
-        :param n_jobs number of jobs to run in parallel, passed to `joblib`
+        :param n_jobs: number of jobs to run in parallel, passed to `joblib`
         :return: mask or binary mask; or None if internal call
         """
         if seg==0:
@@ -284,6 +280,8 @@ class deepCR():
         :param mask (np.ndarray): 2D input mask
         :return: inpainted image
         """
+        img0 = img0.astype(np.float32) / 100
+        mask = mask.astype(np.float32)
         shape = img0.shape[-2:]
         if self.inpaintNet is not None:
             img0 = from_numpy(img0).type(self.dtype). \
@@ -299,6 +297,5 @@ class deepCR():
         else:
             img1 = medmask(img0, mask)
             inpainted = img1 * mask + img0 * (1 - mask)
-
-        return inpainted
+        return inpainted * 100
 
