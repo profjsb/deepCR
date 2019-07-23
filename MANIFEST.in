@@ -4,3 +4,9 @@ graft docs
 graft learned_models
 graft imgs
 recursive-include docs *.txt
+prune docs/_build
+prune tmp
+prune deepCR.egg-info
+global-exclude *.py[co]
+global-exclude *~
+global-exclude *\#
