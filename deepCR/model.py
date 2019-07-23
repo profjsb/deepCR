@@ -1,3 +1,5 @@
+"""main module to instantiate deepCR models and use them
+"""
 from os import path, mkdir
 import math
 
