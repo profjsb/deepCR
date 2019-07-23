@@ -126,6 +126,9 @@ class deepCR():
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :return: mask or binary mask; or None if internal call
         """
+        # data proprocessing
+        img0 = img0.astype(np.float32) / 100
+
         shape = img0.shape
         pad_x = 4 - shape[0] % 4
         pad_y = 4 - shape[1] % 4
@@ -160,10 +163,10 @@ class deepCR():
 
 
             if binary:
-                return binary_mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:]
+                return binary_mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:] * 100
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:]
+                return mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:] * 100
 
         else:
             if binary:
