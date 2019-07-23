@@ -1,5 +1,5 @@
-torch
-sphinx
-sphinx_rtd_theme
-astropy
+#torch
+#sphinx
+#sphinx_rtd_theme
+#astropy
 
