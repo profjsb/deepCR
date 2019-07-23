@@ -1,0 +1,13 @@
+name: deepcr
+channels:
+  - conda-forge
+  - anaconda
+  - pytorch
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - pytorch
+  - joblib
+  - tqdm
+  - pytest

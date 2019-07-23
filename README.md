@@ -2,7 +2,7 @@
 
 ## deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
 
-Apply a learned convolutional neural net (CNN) model to a 2d `numpy` array to identify and remove cosmic ray, on multi-core CPUs or GPUs.
+Apply a learned convolutional neural net (CNN) model to a 2d `numpy` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
