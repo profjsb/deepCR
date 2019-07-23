@@ -2,10 +2,10 @@
 #   file: docs/environment.yml
 
 # pip requirements file for building sphinx docs (e.g. nbsphinx)
-# requirements_file: docs/requirements.txt
+requirements_file: docs/requirements.txt
 
-#python:
-#  setup_py_install: true
+python:
+  setup_py_install: true
 
 formats:
   - none
