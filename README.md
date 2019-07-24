@@ -45,7 +45,7 @@ image = fits.getdata("jdba2sooq_flc.fits")[:512,:512]
 
 # create an instance of deepCR with specified model configuration
 mdl = deepCR(mask="ACS-WFC-F606W-2-32",
-	     inpaint="ACS-WFC-F606W-3-32",
+	     inpaint="ACS-WFC-F606W-2-32",
              device="CPU")
 
 # apply to input image
@@ -63,14 +63,16 @@ prob_mask = mdl.clean(image, binary=False)
 For WFC full size images (4k * 2k), you should specify **segment = True** to tell deepCR to segment the input image into 256*256 patches, and process one patch at a time.
 Otherwise this would take up > 10gb memory. We recommended you use segment = True for images larger than 1k * 1k on CPU. GPU memory limits may be more strict.
 ```python
+image = fits.getdata("jdba2sooq_flc.fits")
 mask, cleaned_image = mdl.clean(image, threshold = 0.5, segment = True)
 ```
 
-(CPU only) In place of segment = True, you can also specify **parallel = True** and invoke the multi-threaded version of segment mode. This will speed things up. You don't have to specify segment = True again.
+(CPU only) In place of **segment = True**, you can also specify **parallel = True** and invoke the multi-threaded version of segment mode. This will speed things up. You don't have to specify segment = True again.
 ```python
+image = fits.getdata("jdba2sooq_flc.fits")
 mask, cleaned_image = mdl.clean(image, threshold = 0.5, parallel = True, n_jobs=-1)
 ```
-n_jobs=-1 makes use of all your CPU cores.
+**n_jobs=-1** makes use of all your CPU cores.
 
 Note that this won't speed things up if you're using GPU!
 
@@ -84,11 +86,11 @@ mask:
 
 inpaint:
 
-    ACS-WFC-F606W-2-32
+    ACS-WFC-F606W-2-32(*)
 
-    ACS-WFC-F606W-3-32(*)
+    ACS-WFC-F606W-3-32
 
-Recommended models are marked in (*). Larger number indicate larger capacity and better performance.
+Recommended models are marked in (*). Larger number indicate larger capacity.
 
 Input images should come from *_flc.fits* files which are in units of electrons.
 
