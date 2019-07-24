@@ -9,7 +9,7 @@ This is the installable package which implements the methods described in the pa
 
 Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
 
-If you use this package, please cite Zhang & Bloom (2019): url TBA
+If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
@@ -30,7 +30,8 @@ python setup.py install
 ### Quick Start
 
 Quick download of a HST ACS/WFC image
-```
+
+```bash
 wget -O jdba2sooq_flc.fits https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:HST/product/jdba2sooq_flc.fits
 ```
 
