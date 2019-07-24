@@ -29,13 +29,18 @@ python setup.py install
 
 ### Quick Start
 
+Quick download of a HST ACS/WFC image
+```
+wget -O jdba2sooq_flc.fits https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:HST/product/jdba2sooq_flc.fits
+```
+
 With Python >=3.5:
 
 For smaller sized images
 ```python
 from deepCR import deepCR
 from astropy.io import fits
-image = fits.getdata("example_flc.fits")[:512,:512]
+image = fits.getdata("jdba2sooq_flc.fits")[:512,:512]
 
 # create an instance of deepCR with specified model configuration
 mdl = deepCR(mask="ACS-WFC-F606W-2-32",
