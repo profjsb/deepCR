@@ -46,8 +46,8 @@ from astropy.io import fits
 image = fits.getdata("jdba2sooq_flc.fits")[:512,:512]
 
 # create an instance of deepCR with specified model configuration
-mdl = deepCR(mask="ACS-WFC-2-32",
-	     inpaint="ACS-WFC-2-32",
+mdl = deepCR(mask="ACS-WFC-F606W-2-32",
+	     inpaint="ACS-WFC-F606W-2-32",
              device="CPU")
 
 # apply to input image
@@ -83,15 +83,15 @@ Note that this won't speed things up if you're using GPU!
 
 mask:
 
-    ACS-WFC-2-4
+    ACS-WFC-F606W-2-4
 
-    ACS-WFC-2-32(*)
+    ACS-WFC-F606W-2-32(*)
 
 inpaint:
 
-    ACS-WFC-2-32(*)
+    ACS-WFC-F606W-2-32(*)
 
-    ACS-WFC-3-32
+    ACS-WFC-F606W-3-32
 
 Recommended models are marked in (*). Larger number indicate larger capacity.
 
