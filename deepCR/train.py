@@ -42,10 +42,10 @@ class train():
             self.network = nn.DataParallel(UNet2Sigmoid(1,1,hidden))
             self.network.type(self.dtype)
         else:
-           self.dtype = torch.FloatTensor
-           self.dint = torch.ByteTensor
-           self.network = WrappedModel(UNet2Sigmoid(1,1,hidden))
-           self.network.type(self.dtype)
+            self.dtype = torch.FloatTensor
+            self.dint = torch.ByteTensor
+            self.network = WrappedModel(UNet2Sigmoid(1,1,hidden))
+            self.network.type(self.dtype)
 
         self.optimizer = optim.Adam(self.network.parameters(), lr=lr)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=0.1, patience=4, cooldown=2,
@@ -68,7 +68,7 @@ class train():
     def validate_mask(self):
         lmask = 0; count = 0
         metric = np.zeros(4)
-        for i, dat in enumerate(self.TrainLoader):
+        for i, dat in enumerate(self.ValLoader):
             n = dat[0].shape[0]
             count += n
             self.set_input(*dat)
@@ -78,7 +78,6 @@ class train():
             metric += maskMetric(self.pdt_mask.reshape(-1, 256, 256).detach().cpu().numpy() > 0.1, dat[1].numpy())
         lmask /= count
         TP, TN, FP, FN = metric[0], metric[1], metric[2], metric[3]
-        print(TP, TN, FP, FN)
         TPR = TP / (TP + FN)
         FPR = FP / (FP + TN)
         print('TPR=%.3f   FPR=%.3f' % (TPR * 100, FPR * 100))
