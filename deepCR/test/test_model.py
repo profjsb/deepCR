@@ -6,10 +6,9 @@ import pytest
 
 from .. import model
 
-
 def test_deepCR_serial():
 
-    mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
+    mdl = model.deepCR(mask='ACS-WFC-2-32', device='CPU')
     in_im = np.ones((299, 299))
     out = mdl.clean(in_im)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
@@ -17,10 +16,9 @@ def test_deepCR_serial():
     out = mdl.clean(in_im, inpaint=False)
     assert out.shape == in_im.shape
 
-
 def test_deepCR_parallel():
 
-    mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
+    mdl = model.deepCR(mask='ACS-WFC-2-32', device='CPU')
     in_im = np.ones((299, 299))
     out = mdl.clean(in_im, parallel=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
@@ -41,8 +39,8 @@ def test_deepCR_parallel():
         assert par_runtime < ser_runtime
 
 def test_seg():
-    mdl = model.deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
-    in_im = np.ones((2000, 2000))
+    mdl = model.deepCR(mask='ACS-WFC-2-32', inpaint='ACS-WFC-2-32', device='CPU')
+    in_im = np.ones((500, 1000))
     out = mdl.clean(in_im, segment=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
     out = mdl.clean(in_im, inpaint=False, segment=True)

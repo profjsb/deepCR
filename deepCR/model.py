@@ -23,7 +23,7 @@ __all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-3-32', device='CPU',
+    def __init__(self, mask='ACS-WFC-2-32', inpaint='ACS-WFC-2-32', device='CPU',
                  model_dir=default_model_path):
 
         """
@@ -82,6 +82,8 @@ class deepCR():
             for p in self.inpaintNet.parameters():
                 p.required_grad = False
 
+        self.scale = mask_dict[mask][2]
+
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
         """
@@ -98,7 +100,7 @@ class deepCR():
         """
 
         # data pre-processing
-        img0 = img0.astype(np.float32) / 100
+        img0 = img0.astype(np.float32) / self.scale
 
         if not segment and not parallel:
             return self.clean_(img0, threshold=threshold,

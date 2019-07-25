@@ -11,6 +11,8 @@ Code to reproduce benchmarking results in the paper is at: https://github.com/km
 
 If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500
 
+Note: the current release includes only model for HST ACS/WFC.
+
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
 ### Installation
@@ -44,14 +46,15 @@ from astropy.io import fits
 image = fits.getdata("jdba2sooq_flc.fits")[:512,:512]
 
 # create an instance of deepCR with specified model configuration
-mdl = deepCR(mask="ACS-WFC-F606W-2-32",
-	     inpaint="ACS-WFC-F606W-2-32",
+mdl = deepCR(mask="ACS-WFC-2-32",
+	     inpaint="ACS-WFC-2-32",
              device="CPU")
 
 # apply to input image
 mask, cleaned_image = mdl.clean(image, threshold = 0.5)
-# visualize those outputs to choose an adequate threshold
-# note that deepCR-inpaint would be inaccurate if mask does not fully cover CR
+# best threshold is highest value that generate mask covering full extent of CR
+# choose threshold by visualizing outputs.
+# note that deepCR-inpaint would overestimate if mask does not fully cover CR.
 
 # if you only need CR mask you may skip image inpainting for shorter runtime
 mask = mdl.clean(image, threshold = 0.5, inpaint=False)
@@ -80,15 +83,15 @@ Note that this won't speed things up if you're using GPU!
 
 mask:
 
-    ACS-WFC-F606W-2-4
+    ACS-WFC-2-4
 
-    ACS-WFC-F606W-2-32(*)
+    ACS-WFC-2-32(*)
 
 inpaint:
 
-    ACS-WFC-F606W-2-32(*)
+    ACS-WFC-2-32(*)
 
-    ACS-WFC-F606W-3-32
+    ACS-WFC-3-32
 
 Recommended models are marked in (*). Larger number indicate larger capacity.
 
@@ -101,9 +104,9 @@ Full documentation is under development at: https://deepcr.readthedocs.io/en/lat
 
 ### Limitations and Caveats
 
-In the current release, the included models have been trained and tested only on Hubble Space Telescope (HST) ACS/WFC images in the F606W filter. They may work well on nearby ACS/WFC filters, though users should exert caution.
+The currently included models are trained and benchmarked on HST ACS/WFC images in the F606W filter.
 
-The ACS/WFC models are not expected to work optimally on other HST detectors, though we'd be interested to know if you find additional use cases for them.
+Visual inspection shows that these models also work well on filters from F435W to F814W. However, users should use a higher threshold (e.g. 0.9) for short wavelength filters to minimize false detections, if any.
 
 ### Contributing
 
