@@ -23,7 +23,7 @@ __all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-2-32', inpaint='ACS-WFC-2-32', device='CPU',
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU',
                  model_dir=default_model_path):
 
         """
