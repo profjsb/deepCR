@@ -10,7 +10,7 @@ See https://github.com/profjsb/deepCR
 
 """
 from deepCR.model import deepCR
-from deepCR.train import train
+from deepCR.training import train
 
 #__all__ = [model.__all__,train.__all__]
 

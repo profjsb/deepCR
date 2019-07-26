@@ -9,17 +9,12 @@ import torch.nn as nn
 from torch import from_numpy
 from joblib import Parallel, delayed
 from joblib import dump, load
-from joblib import wrap_non_picklable_objects
-
-from tqdm import tqdm
-
-
+#from joblib import wrap_non_picklable_objects
 from deepCR.unet import WrappedModel
 from deepCR.util import medmask
 from learned_models import mask_dict, inpaint_dict, default_model_path
 
 __all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
-
 
 class deepCR():
 
@@ -212,7 +207,7 @@ class deepCR():
         mask = np.memmap(mask_filename_memmap, dtype=np.int8 if binary else img0_dtype,
                            shape=im_shape, mode='w+')
 
-        @wrap_non_picklable_objects
+        #@wrap_non_picklable_objects
         def fill_values(i, j, img0, img1, mask, patch, inpaint, threshold, binary):
             img = img0[i * patch: min((i + 1) * patch, im_shape[0]), j * patch: min((j + 1) * patch, im_shape[1])]
             if inpaint:
