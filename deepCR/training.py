@@ -106,6 +106,7 @@ class train():
         """ call this function to start training network
         :return: None
         """
+        print('Begin first {} epochs of training (training mode)').format(int(self.n_epochs * 0.4 + 0.5))
         self.network.train()
         for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
@@ -116,10 +117,13 @@ class train():
                 plt.figure(figsize=(10, 30))
                 plt.subplot(131)
                 plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
+                plt.title('image')
                 plt.subplot(132)
-                plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy()>0.5, cmap='gray')
+                plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy() > 0.5, cmap='gray')
+                plt.title('prediction > 0.5')
                 plt.subplot(133)
                 plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
+                plt.title('ground truth')
                 plt.show()
 
             print('epoch = %d' % (self.epoch_mask))
@@ -127,14 +131,17 @@ class train():
             self.lossMask_val.append(valLossMask)
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
-                self.save_mask()
+                filename = self.save_mask()
+                print(filename)
             self.lr_scheduler.step(self.lossMask_val[-1])
             print('loss = %.4f' % (self.lossMask_val[-1]))
             self.n_epochs -= 1
 
-        print('Network set to evaluation mode; BN parameter frozen')
+        filename = self.save_mask()
+        self.load_mask(filename)
         self.network.eval()
-        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))):
+        print('Network set to evaluation mode; BN parameter frozen')
+        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.6 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
@@ -154,7 +161,8 @@ class train():
             self.lossMask_val.append(valLossMask)
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
-                self.save_mask()
+                filename = self.save_mask()
+                print(filename)
             self.lr_scheduler.step(self.lossMask_val[-1])
             print('loss = %.4f' % (self.lossMask_val[-1]))
             self.n_epochs -= 1
@@ -169,7 +177,7 @@ class train():
 
     def backward_network(self):
         loss = self.BCELoss(self.pdt_mask * (1 - self.ignore), self.mask * (1 - self.ignore))
-        return (loss)
+        return loss
 
     def plot_loss(self):
         """ plot validation loss vs. epoch
@@ -189,11 +197,11 @@ class train():
         time = datetime.datetime.now()
         time = str(time)[:10]
         filename = '%s_%s_epoch%d' % (time, self.name, self.epoch_mask)
-        print(filename)
+        #print(filename)
         torch.save(self.network.state_dict(), self.directory + filename + '.pth')
-        lossTrain = np.array(self.lossMask_train)
-        lossVal = np.array(self.lossMask_val)
-        np.save(self.directory + filename + 'loss.npy', lossVal)
+        #lossVal = np.array(self.lossMask_val)
+        #np.save(self.directory + filename + 'loss.npy', lossVal)
+        return filename
 
     def load_mask(self, filename):
         """ Continue training from a previous model state saved to filename
@@ -201,6 +209,6 @@ class train():
         :return: None
         """
         self.network.load_state_dict(torch.load(self.directory + filename + '.pth'))
-        self.lossMask_val = list(np.load(self.directory + filename + 'loss.npy'))
+        #self.lossMask_val = list(np.load(self.directory + filename + 'loss.npy'))
         loc = filename.find('epoch') + 5
         self.epoch_mask = int(filename[loc:])
