@@ -106,7 +106,7 @@ class train():
         """ call this function to start training network
         :return: None
         """
-        print('Begin first {} epochs of training (training mode)').format(int(self.n_epochs * 0.4 + 0.5))
+        print('Begin first {} epochs of training (training mode)'.format(int(self.n_epochs * 0.4 + 0.5)))
         self.network.train()
         for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
@@ -141,7 +141,7 @@ class train():
         self.load_mask(filename)
         self.network.eval()
         print('Network set to evaluation mode; BN parameter frozen')
-        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.6 + 0.5))):
+        for epoch in tqdm(range(self.n_epochs)):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1

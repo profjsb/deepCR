@@ -16,7 +16,7 @@ def _roc(model, data, thresholds):
     """
     nROC = thresholds.size
     metric = np.zeros((nROC, 4))
-    for t in range(len(data)):
+    for t in tqdm(range(len(data))):
         dat = data[t]
         pdt_mask = model.clean(dat[0], inpaint=False, binary=False)
         msk = dat[1]
