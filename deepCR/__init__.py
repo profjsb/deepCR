@@ -9,10 +9,8 @@ Code which accompanies the paper: Zhang & Bloom (2019)
 See https://github.com/profjsb/deepCR
 
 """
-from deepCR.model import deepCR
-from deepCR.training import train
-from deepCR.evaluate import roc
+from . import model, evaluate, training
 
-#__all__ = [model.__all__,train.__all__]
+__all__ = [model.__all__, evaluate.__all__, training.__all__]
 
 __version__ = '0.1.4'

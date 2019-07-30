@@ -1,8 +1,7 @@
 """ module for training new deepCR-mask models
 """
-
 import torch
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm as tqdm
 from deepCR.unet import WrappedModel, UNet2Sigmoid
 import matplotlib.pyplot as plt
 import torch.nn as nn
@@ -11,11 +10,11 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 import numpy as np
 import datetime
-from torch.optim.lr_scheduler import MultiStepLR, ReduceLROnPlateau
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from deepCR.util import maskMetric
 from deepCR.dataset import dataset
 
-__all__ = ('train')
+__all__ = 'train'
 
 class train():
 
@@ -81,6 +80,9 @@ class train():
         self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
 
+    def notebook(self):
+        from tqdm import tqdm as tqdm
+
     def validate_mask(self):
         """
         :return: validation loss. print TPR and FPR at threshold = 0.5.
@@ -131,17 +133,16 @@ class train():
             self.lossMask_val.append(valLossMask)
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
-                filename = self.save_mask()
+                filename = self.save()
                 print(filename)
             self.lr_scheduler.step(self.lossMask_val[-1])
             print('loss = %.4f' % (self.lossMask_val[-1]))
-            self.n_epochs -= 1
 
-        filename = self.save_mask()
-        self.load_mask(filename)
+        filename = self.save()
+        self.load(filename)
         self.network.eval()
         print('Network set to evaluation mode; BN parameter frozen')
-        for epoch in tqdm(range(self.n_epochs)):
+        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
@@ -156,16 +157,15 @@ class train():
                 plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
                 plt.show()
 
-            print('epoch = %d' % (self.epoch_mask))
+            print('epoch = %d' % self.epoch_mask)
             valLossMask = self.validate_mask()
             self.lossMask_val.append(valLossMask)
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
-                filename = self.save_mask()
+                filename = self.save()
                 print(filename)
             self.lr_scheduler.step(self.lossMask_val[-1])
             print('loss = %.4f' % (self.lossMask_val[-1]))
-            self.n_epochs -= 1
 
     def optimize_network(self, dat):
         self.set_input(*dat)
@@ -190,7 +190,7 @@ class train():
         plt.title('Validation loss')
         plt.show()
 
-    def save_mask(self):
+    def save(self):
         """ save trained network parameters to date_model_name_epoch*.pth
         :return: None
         """
@@ -203,7 +203,7 @@ class train():
         #np.save(self.directory + filename + 'loss.npy', lossVal)
         return filename
 
-    def load_mask(self, filename):
+    def load(self, filename):
         """ Continue training from a previous model state saved to filename
         :param filename: (str) filename (without ".pth") to load model state
         :return: None
