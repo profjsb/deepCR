@@ -18,7 +18,7 @@ __all__ = 'train'
 
 class train():
 
-    def __init__(self, image, mask, ignore=None, sky=None, name='model', hidden=32, gpu=False, epoch=50, batch_size=16, lr=0.005, aug_sky=[0, 0], save_after=1e3, every=10, directory='./'):
+    def __init__(self, image, mask, ignore=None, sky=None, name='model', hidden=32, gpu=False, epoch=50, batch_size=16, lr=0.005, aug_sky=[0, 0], save_after=0, plot_every=10, directory='./'):
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
         :param mask: np.ndarray (N*W*W) training data: CR mask array
@@ -31,7 +31,7 @@ class train():
         :param lr: learning rate. default: 0.005
         :param aug_sky: [float, float]. Use random sky background from aug_sky[0] * sky to aug_sky[1] * sky.
         :param save_after: epoch after which trainer automatically saves model state with lowest validation loss
-        :param every: for every epoch, visualize mask prediction for 1st image in validation set.
+        :param plot_every: for every epoch, visualize mask prediction for 1st image in validation set.
         """
         if sky is None and aug_sky != [0, 0]:
             raise AttributeError('Var (sky) is required for sky background augmentation!')
@@ -66,7 +66,7 @@ class train():
         self.epoch_mask = 0
         self.save_after = save_after
         self.n_epochs = epoch
-        self.every = every
+        self.every = plot_every
         self.directory = directory
 
     def set_input(self, img0, mask, ignore):
@@ -101,14 +101,15 @@ class train():
         TP, TN, FP, FN = metric[0], metric[1], metric[2], metric[3]
         TPR = TP / (TP + FN)
         FPR = FP / (FP + TN)
-        print('TPR=%.3f   FPR=%.3f' % (TPR * 100, FPR * 100))
+        print('[TPR=%.3f, FPR=%.3f] @threshold = 0.5' % (TPR * 100, FPR * 100))
         return (lmask)
 
     def train(self):
         """ call this function to start training network
         :return: None
         """
-        print('Begin first {} epochs of training (training mode)'.format(int(self.n_epochs * 0.4 + 0.5)))
+        print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
+        print('Use batch statistics for batch norm; keep running mean')
         self.network.train()
         for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
@@ -128,20 +129,23 @@ class train():
                 plt.title('ground truth')
                 plt.show()
 
-            print('epoch = %d' % (self.epoch_mask))
+            print('----------- epoch = %d -----------' % (self.epoch_mask))
             valLossMask = self.validate_mask()
             self.lossMask_val.append(valLossMask)
+            print('loss = %.4f' % (self.lossMask_val[-1]))
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
                 filename = self.save()
-                print(filename)
+                print('Saved to {}.pth'.format(filename))
             self.lr_scheduler.step(self.lossMask_val[-1])
-            print('loss = %.4f' % (self.lossMask_val[-1]))
+            print('')
 
         filename = self.save()
         self.load(filename)
-        self.network.eval()
-        print('Network set to evaluation mode; BN parameter frozen')
+        self.set_to_eval()
+        print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
+        print('Batch norm running statistics frozen and used')
+        print('')
         for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
@@ -157,16 +161,19 @@ class train():
                 plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
                 plt.show()
 
-            print('epoch = %d' % self.epoch_mask)
+            print('----------- epoch = %d -----------' % self.epoch_mask)
             valLossMask = self.validate_mask()
             self.lossMask_val.append(valLossMask)
+            print('loss = %.4f' % (self.lossMask_val[-1]))
             if (np.array(self.lossMask_val)[-1] == np.array(
                     self.lossMask_val).min() and self.epoch_mask > self.save_after):
                 filename = self.save()
-                print(filename)
+                print('Saved to {}.pth'.format(filename))
             self.lr_scheduler.step(self.lossMask_val[-1])
-            print('loss = %.4f' % (self.lossMask_val[-1]))
+            print('')
 
+    def set_to_eval(self):
+        self.network.eval()
     def optimize_network(self, dat):
         self.set_input(*dat)
         self.pdt_mask = self.network(self.img0)
@@ -197,10 +204,7 @@ class train():
         time = datetime.datetime.now()
         time = str(time)[:10]
         filename = '%s_%s_epoch%d' % (time, self.name, self.epoch_mask)
-        #print(filename)
         torch.save(self.network.state_dict(), self.directory + filename + '.pth')
-        #lossVal = np.array(self.lossMask_val)
-        #np.save(self.directory + filename + 'loss.npy', lossVal)
         return filename
 
     def load(self, filename):
@@ -209,6 +213,5 @@ class train():
         :return: None
         """
         self.network.load_state_dict(torch.load(self.directory + filename + '.pth'))
-        #self.lossMask_val = list(np.load(self.directory + filename + 'loss.npy'))
         loc = filename.find('epoch') + 5
         self.epoch_mask = int(filename[loc:])

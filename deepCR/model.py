@@ -47,9 +47,11 @@ class deepCR():
             self.dint = torch.ByteTensor
             wrapper = WrappedModel
         if mask in mask_dict.keys():
+            self.scale = mask_dict[mask][2]
             mask_path = default_model_path + '/mask/' + mask + '.pth'
             self.maskNet = wrapper(mask_dict[mask][0](*mask_dict[mask][1]))
         else:
+            self.scale = 1
             mask_path = mask
             self.maskNet = wrapper(UNet2Sigmoid(1, 1, hidden))
         self.maskNet.type(self.dtype)
@@ -73,7 +75,7 @@ class deepCR():
                 p.required_grad = False
         else:
             self.inpaintNet = None
-        self.scale = mask_dict[mask][2]
+        
 
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
