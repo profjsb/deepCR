@@ -1,37 +1,57 @@
 """ module for training new deepCR-mask models
 """
-import torch
-from tqdm import tqdm as tqdm
-from deepCR.unet import WrappedModel, UNet2Sigmoid
+import numpy as np
+import datetime
 import matplotlib.pyplot as plt
+from tqdm import tqdm as tqdm
+from tqdm import tqdm_notebook as tqdm_notebook
+
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-import numpy as np
-import datetime
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 from deepCR.util import maskMetric
 from deepCR.dataset import dataset
+from deepCR.unet import WrappedModel, UNet2Sigmoid
 
 __all__ = 'train'
 
+
 class train():
 
-    def __init__(self, image, mask, ignore=None, sky=None, name='model', hidden=32, gpu=False, epoch=50, batch_size=16, lr=0.005, aug_sky=[0, 0], save_after=0, plot_every=10, directory='./'):
+    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], name='model', hidden=32, gpu=False, epoch=50,
+                 batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=0,
+                 plot_every=10, verbose=True, tqdm_default=False, tqdm_notebook=False, directory='./'):
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
         :param mask: np.ndarray (N*W*W) training data: CR mask array
         :param ignore: training data: Mask for taking loss. e.g., bad pixel, saturation, etc.
+        :param sky: np.ndarray (N,) (optional) sky background
+        :param aug_sky: [float, float]. If sky is provided, use random sky background in the range
+          [aug_sky[0] * sky, aug_sky[1] * sky]. This serves as a regularizers to allow the trained model to adapt to a
+          wider range of sky background or equivalently exposure time. Remedy the fact that exposure time in the
+          training set is discrete and limited.
         :param name: model name. model saved to name_epoch.pth
         :param hidden: number of channels for the first convolution layer. default: 50
         :param gpu: True if use GPU for training
         :param epoch: Number of epochs to train. default: 50
         :param batch_size: training batch size. default: 16
         :param lr: learning rate. default: 0.005
-        :param aug_sky: [float, float]. Use random sky background from aug_sky[0] * sky to aug_sky[1] * sky.
+        :param auto_lr_decay: reduce learning rate by "lr_decay_factor" after validation loss do not decrease for
+          "lr_decay_patience" + 1 epochs.
+        :param lr_decay_patience: reduce learning rate by lr_decay_factor after validation loss do not decrease for
+          "lr_decay_patience" + 1 epochs.
+        :param lr_decay_factor: multiplicative factor by which to reduce learning rate.
         :param save_after: epoch after which trainer automatically saves model state with lowest validation loss
-        :param plot_every: for every epoch, visualize mask prediction for 1st image in validation set.
+        :param plot_every: for every "plot_every" epoch, plot mask prediction and ground truth for 1st image in
+          validation set.
+        :param verbose: print validation loss and detection rates for every epoch.
+        :param tqdm_default: whether to show tqdm progress bar.
+        :param tqdm_notebook: whether to use jupyter notebook version of tqdm. Overwrites tqdm_default.
+        :param directory: directory relative to current path to save trained model.
         """
         if sky is None and aug_sky != [0, 0]:
             raise AttributeError('Var (sky) is required for sky background augmentation!')
@@ -58,16 +78,27 @@ class train():
             self.network.type(self.dtype)
 
         self.optimizer = optim.Adam(self.network.parameters(), lr=lr)
-        self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=0.1, patience=4, cooldown=2,
-                                                          min_lr=lr * 1e-4, verbose=True, threshold=0.01)
-
+        if auto_lr_decay:
+            self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=lr_decay_factor, patience=lr_decay_patience,
+                                                  cooldown=2, verbose=True, threshold=0.005)
+        else:
+            self.lr_scheduler = self._void_lr_scheduler
         self.BCELoss = nn.BCELoss()
-        self.lossMask_val = []
+        self.validation_loss = []
         self.epoch_mask = 0
         self.save_after = save_after
         self.n_epochs = epoch
         self.every = plot_every
         self.directory = directory
+        self.verbose = verbose
+
+        if tqdm_notebook:
+            self.tqdm = tqdm_notebook
+        else:
+            self.tqdm = tqdm
+
+        self.disable_tqdm = not (tqdm_notebook or tqdm_default)
+
 
     def set_input(self, img0, mask, ignore):
         """
@@ -80,8 +111,9 @@ class train():
         self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
 
-    def notebook(self):
-        from tqdm import tqdm as tqdm
+    @staticmethod
+    def _void_lr_scheduler(self, metric):
+        pass
 
     def validate_mask(self):
         """
@@ -101,17 +133,19 @@ class train():
         TP, TN, FP, FN = metric[0], metric[1], metric[2], metric[3]
         TPR = TP / (TP + FN)
         FPR = FP / (FP + TN)
-        print('[TPR=%.3f, FPR=%.3f] @threshold = 0.5' % (TPR * 100, FPR * 100))
+        if self.verbose:
+            print('[TPR=%.3f, FPR=%.3f] @threshold = 0.5' % (TPR, FPR))
         return (lmask)
 
     def train(self):
         """ call this function to start training network
         :return: None
         """
-        print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
-        print('Use batch statistics for batch norm; keep running mean')
+        if self.verbose:
+            print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
+            print('Use batch statistics for batch norm; keep running mean')
         self.network.train()
-        for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5))):
+        for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
@@ -120,7 +154,7 @@ class train():
                 plt.figure(figsize=(10, 30))
                 plt.subplot(131)
                 plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
-                plt.title('image')
+                plt.title('epoch=%d'%self.epoch_mask)
                 plt.subplot(132)
                 plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy() > 0.5, cmap='gray')
                 plt.title('prediction > 0.5')
@@ -129,24 +163,29 @@ class train():
                 plt.title('ground truth')
                 plt.show()
 
-            print('----------- epoch = %d -----------' % (self.epoch_mask))
-            valLossMask = self.validate_mask()
-            self.lossMask_val.append(valLossMask)
-            print('loss = %.4f' % (self.lossMask_val[-1]))
-            if (np.array(self.lossMask_val)[-1] == np.array(
-                    self.lossMask_val).min() and self.epoch_mask > self.save_after):
+            if self.verbose:
+                print('----------- epoch = %d -----------' % (self.epoch_mask))
+            val_loss = self.validate_mask()
+            self.validation_loss.append(val_loss)
+            if self.verbose:
+                print('loss = %.4f' % (self.validation_loss[-1]))
+            if (np.array(self.validation_loss)[-1] == np.array(
+                    self.validation_loss).min() and self.epoch_mask > self.save_after):
                 filename = self.save()
-                print('Saved to {}.pth'.format(filename))
-            self.lr_scheduler.step(self.lossMask_val[-1])
-            print('')
+                if self.verbose:
+                    print('Saved to {}.pth'.format(filename))
+            self.lr_scheduler.step(self.validation_loss[-1])
+            if self.verbose:
+                print('')
 
         filename = self.save()
         self.load(filename)
         self.set_to_eval()
-        print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
-        print('Batch norm running statistics frozen and used')
-        print('')
-        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))):
+        if self.verbose:
+            print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
+            print('Batch norm running statistics frozen and used')
+            print('')
+        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
@@ -161,16 +200,20 @@ class train():
                 plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
                 plt.show()
 
-            print('----------- epoch = %d -----------' % self.epoch_mask)
+            if self.verbose:
+                print('----------- epoch = %d -----------' % self.epoch_mask)
             valLossMask = self.validate_mask()
-            self.lossMask_val.append(valLossMask)
-            print('loss = %.4f' % (self.lossMask_val[-1]))
-            if (np.array(self.lossMask_val)[-1] == np.array(
-                    self.lossMask_val).min() and self.epoch_mask > self.save_after):
+            self.validation_loss.append(valLossMask)
+            if self.verbose:
+                print('loss = %.4f' % (self.validation_loss[-1]))
+            if (np.array(self.validation_loss)[-1] == np.array(
+                    self.validation_loss).min() and self.epoch_mask > self.save_after):
                 filename = self.save()
-                print('Saved to {}.pth'.format(filename))
-            self.lr_scheduler.step(self.lossMask_val[-1])
-            print('')
+                if self.verbose:
+                    print('Saved to {}.pth'.format(filename))
+            self.lr_scheduler.step(self.validation_loss[-1])
+            if self.verbose:
+                print('')
 
     def set_to_eval(self):
         self.network.eval()
@@ -191,7 +234,7 @@ class train():
         :return: None
         """
         plt.figure(figsize=(10,5))
-        plt.plot(range(self.epoch_mask), self.lossMask_val)
+        plt.plot(range(self.epoch_mask), self.validation_loss)
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.title('Validation loss')

@@ -3,23 +3,24 @@
 from os import path, mkdir
 import math
 import numpy as np
-import joblib
+
 import torch
 import torch.nn as nn
 from torch import from_numpy
 from joblib import Parallel, delayed
 from joblib import dump, load
-#from joblib import wrap_non_picklable_objects
+from joblib import wrap_non_picklable_objects
+
 from deepCR.unet import WrappedModel, UNet2Sigmoid
 from deepCR.util import medmask
 from learned_models import mask_dict, inpaint_dict, default_model_path
 
-#__all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
 __all__ = 'deepCR'
+
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-2-32', inpaint=None, device='CPU', hidden=32):
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
 
         """
             Instantiation of deepCR with specified model configurations
@@ -27,9 +28,10 @@ class deepCR():
         Parameters
         ----------
         mask : str
-            Either name of existing deepCR-mask model, or filepath of your own model (incl. '.pth')
+            Either name of existing deepCR-mask model, or file path of your own model (incl. '.pth')
         inpaint : (optional) str
-            Name of existing inpainting model to use. If left as None then by default use a simple 5x5 median mask sampling for inpainting
+            Name of existing inpainting model to use. If left as None then by default use a simple 5x5 median mask
+            sampling for inpainting
         device : str
             One of 'CPU' or 'GPU'
         hidden : int
@@ -75,20 +77,23 @@ class deepCR():
                 p.required_grad = False
         else:
             self.inpaintNet = None
-        
 
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
         """
             Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
-        :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from _flc.fits and in units of electrons in native resolution.
+        :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from
+        _flc.fits and in units of electrons in native resolution.
         :param threshold: (float; [0, 1]) applied to probabilistic mask to generate binary mask
         :param inpaint: (bool) return clean, inpainted image only if True
         :param binary: return binary CR mask if True. probabilistic mask if False
-        :param segment: (bool) if True, segment input image into chunks of patch * patch before performing CR rejection. Used for memory control.
-        :param patch: (int) Use 256 unless otherwise required. if segment==True, segment image into chunks of patch * patch.
+        :param segment: (bool) if True, segment input image into chunks of patch * patch before performing CR rejection.
+          Used for memory control.
+        :param patch: (int) Use 256 unless otherwise required. if segment==True, segment image into chunks of
+          patch * patch.
         :param parallel: (bool) run in parallel if True and segment==True
-        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for larger n_jobs.
+        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for
+          larger n_jobs.
         :return: CR mask and (optionally) clean inpainted image
         """
 
@@ -176,7 +181,8 @@ class deepCR():
         :param inpaint: return clean image only if True
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :param patch: (int) Use 256 unless otherwise required. patch size to run deepCR on.
-        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for larger n_jobs.
+        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for
+          larger n_jobs.
         :return: CR mask and (optionally) clean inpainted image
         """
         folder = './joblib_memmap'
@@ -205,7 +211,7 @@ class deepCR():
         mask = np.memmap(mask_filename_memmap, dtype=np.int8 if binary else img0_dtype,
                            shape=im_shape, mode='w+')
 
-        #@wrap_non_picklable_objects
+        @wrap_non_picklable_objects
         def fill_values(i, j, img0, img1, mask, patch, inpaint, threshold, binary):
             img = img0[i * patch: min((i + 1) * patch, im_shape[0]), j * patch: min((j + 1) * patch, im_shape[1])]
             if inpaint:

@@ -1,12 +1,12 @@
 import numpy as np
-#import pytest
+import pytest
 
-from .. import evaluate
-from .. import model
+import deepCR.evaluate as evaluate
+from deepCR.model import deepCR
 
 
 def test_eval():
-    mdl = model.deepCR()
+    mdl = deepCR()
     var = np.zeros((10,24,24))
     tpr, fpr = evaluate.roc(mdl, image=var, mask=var, thresholds=np.linspace(0,1,10))
     assert tpr.shape == (10,)

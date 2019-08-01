@@ -1,7 +1,9 @@
 import numpy as np
+from tqdm import tqdm as tqdm
+
 from deepCR.util import maskMetric
 from deepCR.dataset import dataset
-from tqdm import tqdm as tqdm
+
 
 __all__ = 'roc'
 

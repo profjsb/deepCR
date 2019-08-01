@@ -25,6 +25,7 @@ def medmask(image, mask):
             clean[x, y] = medianImage
     return clean
 
+
 def maskMetric(PD, GT):
     if len(PD.shape) == 2:
         PD = PD.reshape(1, *PD.shape)
@@ -37,4 +38,4 @@ def maskMetric(PD, GT):
         TN += (PD[i][GT[i]==0]==0).sum()
         FP += (PD[i][GT[i]==0]==1).sum()
         FN += (PD[i][GT[i]==1]==0).sum()
-    return(np.array([TP, TN, FP, FN]))
+    return np.array([TP, TN, FP, FN])
