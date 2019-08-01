@@ -24,7 +24,7 @@ class train():
 
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], name='model', hidden=32, gpu=False, epoch=50,
                  batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=0,
-                 plot_every=10, verbose=True, tqdm_default=False, tqdm_notebook=False, directory='./'):
+                 plot_every=10, verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
         :param mask: np.ndarray (N*W*W) training data: CR mask array
@@ -49,8 +49,8 @@ class train():
         :param plot_every: for every "plot_every" epoch, plot mask prediction and ground truth for 1st image in
           validation set.
         :param verbose: print validation loss and detection rates for every epoch.
-        :param tqdm_default: whether to show tqdm progress bar.
-        :param tqdm_notebook: whether to use jupyter notebook version of tqdm. Overwrites tqdm_default.
+        :param use_tqdm: whether to show tqdm progress bar.
+        :param use_tqdm_notebook: whether to use jupyter notebook version of tqdm. Overwrites tqdm_default.
         :param directory: directory relative to current path to save trained model.
         """
         if sky is None and aug_sky != [0, 0]:
@@ -92,12 +92,11 @@ class train():
         self.directory = directory
         self.verbose = verbose
 
-        if tqdm_notebook:
+        if use_tqdm_notebook:
             self.tqdm = tqdm_notebook
         else:
             self.tqdm = tqdm
-
-        self.disable_tqdm = not (tqdm_notebook or tqdm_default)
+        self.disable_tqdm = not (use_tqdm_notebook or use_tqdm)
 
 
     def set_input(self, img0, mask, ignore):
@@ -145,7 +144,7 @@ class train():
             print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
             print('Use batch statistics for batch norm; keep running mean')
         self.network.train()
-        for epoch in tqdm(range(int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
+        for epoch in self.tqdm(range(int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
@@ -185,7 +184,7 @@ class train():
             print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
             print('Batch norm running statistics frozen and used')
             print('')
-        for epoch in tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
+        for epoch in self.tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
