@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset
 
+
 class dataset(Dataset):
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], part='train', f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data

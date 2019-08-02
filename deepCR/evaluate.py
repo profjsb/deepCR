@@ -5,7 +5,7 @@ from deepCR.util import maskMetric
 from deepCR.dataset import dataset
 
 
-__all__ = 'roc'
+__all__ = ['roc']
 
 
 def _roc(model, data, thresholds):

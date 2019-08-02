@@ -2,8 +2,9 @@
 """
 from os import path, mkdir
 import math
-import numpy as np
+import shutil
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import from_numpy
@@ -15,7 +16,7 @@ from deepCR.unet import WrappedModel, UNet2Sigmoid
 from deepCR.util import medmask
 from learned_models import mask_dict, inpaint_dict, default_model_path
 
-__all__ = 'deepCR'
+__all__ = ['deepCR']
 
 
 class deepCR():

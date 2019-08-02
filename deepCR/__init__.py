@@ -13,6 +13,6 @@ from deepCR.model import deepCR
 from deepCR.training import train
 from deepCR.evaluate import roc
 
-__all__ = [deepCR, train, roc]
+__all__ = ["deepCR", "train", "roc"]
 
 __version__ = '0.1.5'
