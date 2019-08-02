@@ -3,7 +3,7 @@
 from os import path, mkdir
 import math
 import numpy as np
-import joblib
+
 import torch
 import torch.nn as nn
 from torch import from_numpy
@@ -11,20 +11,16 @@ from joblib import Parallel, delayed
 from joblib import dump, load
 from joblib import wrap_non_picklable_objects
 
-from tqdm import tqdm
-
-
-from deepCR.unet import WrappedModel
+from deepCR.unet import WrappedModel, UNet2Sigmoid
 from deepCR.util import medmask
 from learned_models import mask_dict, inpaint_dict, default_model_path
 
-__all__ = ('deepCR', 'mask_dict', 'inpaint_dict', 'default_model_path')
+__all__ = 'deepCR'
 
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU',
-                 model_dir=default_model_path):
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
 
         """
             Instantiation of deepCR with specified model configurations
@@ -32,17 +28,14 @@ class deepCR():
         Parameters
         ----------
         mask : str
-            Name of deepCR-mask model to use.
-        inpaint : str
-            Name of the inpainting model to use. It can also be `medmask` which will then
-            use a simple 5x5 median mask sampling for inpainting
+            Either name of existing deepCR-mask model, or file path of your own model (incl. '.pth')
+        inpaint : (optional) str
+            Name of existing inpainting model to use. If left as None then by default use a simple 5x5 median mask
+            sampling for inpainting
         device : str
             One of 'CPU' or 'GPU'
-        model_dir : str
-            The location of the model directory with the mask/ and inpaint/
-            subdirectories. This defaults to where the pre-shipped
-            models live (in `learned_models/`)
-
+        hidden : int
+            Number of hidden channel for first deepCR-mask layer. Specify only if using custom deepCR-mask model.
         Returns
         -------
         None
@@ -55,47 +48,52 @@ class deepCR():
             self.dtype = torch.FloatTensor
             self.dint = torch.ByteTensor
             wrapper = WrappedModel
-
-        if mask is not None:
+        if mask in mask_dict.keys():
+            self.scale = mask_dict[mask][2]
+            mask_path = default_model_path + '/mask/' + mask + '.pth'
             self.maskNet = wrapper(mask_dict[mask][0](*mask_dict[mask][1]))
-            self.maskNet.type(self.dtype)
-            if device != 'GPU':
-                self.maskNet.load_state_dict(torch.load(model_dir + '/mask/' + mask + '.pth',
-                                                        map_location='cpu'))
-            else:
-                self.maskNet.load_state_dict(torch.load(model_dir + '/mask/' + mask + '.pth'))
-
-            self.maskNet.eval()
-            for p in self.maskNet.parameters():
-                p.required_grad = False
-
-        if inpaint == 'medmask':
-            self.inpaintNet = None
         else:
+            self.scale = 1
+            mask_path = mask
+            self.maskNet = wrapper(UNet2Sigmoid(1, 1, hidden))
+        self.maskNet.type(self.dtype)
+        if device != 'GPU':
+            self.maskNet.load_state_dict(torch.load(mask_path, map_location='cpu'))
+        else:
+            self.maskNet.load_state_dict(torch.load(mask_path))
+        self.maskNet.eval()
+        for p in self.maskNet.parameters():
+            p.required_grad = False
+
+        if inpaint is not None:
+            inpaint_path = default_model_path + '/inpaint/' + inpaint + '.pth'
             self.inpaintNet = wrapper(inpaint_dict[inpaint][0](*inpaint_dict[inpaint][1])).type(self.dtype)
             if device != 'GPU':
-                self.inpaintNet.load_state_dict(torch.load(model_dir+'/inpaint/' + inpaint+'.pth',
-                                                           map_location='cpu'))
+                self.inpaintNet.load_state_dict(torch.load(inpaint_path, map_location='cpu'))
             else:
-                self.inpaintNet.load_state_dict(torch.load(model_dir+'/inpaint/' + inpaint+'.pth'))
+                self.inpaintNet.load_state_dict(torch.load(inpaint_path))
             self.inpaintNet.eval()
             for p in self.inpaintNet.parameters():
                 p.required_grad = False
-
-        self.scale = mask_dict[mask][2]
+        else:
+            self.inpaintNet = None
 
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
         """
             Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
-        :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from _flc.fits and in units of electrons in native resolution.
+        :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from
+        _flc.fits and in units of electrons in native resolution.
         :param threshold: (float; [0, 1]) applied to probabilistic mask to generate binary mask
         :param inpaint: (bool) return clean, inpainted image only if True
         :param binary: return binary CR mask if True. probabilistic mask if False
-        :param segment: (bool) if True, segment input image into chunks of patch * patch before performing CR rejection. Used for memory control.
-        :param patch: (int) Use 256 unless otherwise required. if segment==True, segment image into chunks of patch * patch.
+        :param segment: (bool) if True, segment input image into chunks of patch * patch before performing CR rejection.
+          Used for memory control.
+        :param patch: (int) Use 256 unless otherwise required. if segment==True, segment image into chunks of
+          patch * patch.
         :param parallel: (bool) run in parallel if True and segment==True
-        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for larger n_jobs.
+        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for
+          larger n_jobs.
         :return: CR mask and (optionally) clean inpainted image
         """
 
@@ -183,7 +181,8 @@ class deepCR():
         :param inpaint: return clean image only if True
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :param patch: (int) Use 256 unless otherwise required. patch size to run deepCR on.
-        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for larger n_jobs.
+        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for
+          larger n_jobs.
         :return: CR mask and (optionally) clean inpainted image
         """
         folder = './joblib_memmap'
