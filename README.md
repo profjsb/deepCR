@@ -5,11 +5,14 @@
 
 Identify and remove cosmic rays from astronomical images using trained convolutional neural networks.
 
+Documentation and tutorials: https://deepcr.readthedocs.io/
+
 This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted.
 
 Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
 
-If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500
+If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500 and consider including a
+link to this repository.
 
 Note: the current release includes only model for HST ACS/WFC.
 
@@ -96,11 +99,6 @@ inpaint:
 Recommended models are marked in (*). Larger number indicate larger capacity.
 
 Input images should come from *_flc.fits* files which are in units of electrons.
-
-
-### API Documentation
-
-Full documentation is under development at: https://deepcr.readthedocs.io/en/latest/deepCR.html
 
 ### Limitations and Caveats
 

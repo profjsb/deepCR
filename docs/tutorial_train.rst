@@ -33,11 +33,13 @@ The save_after argument lets the trainer to save models on every epoch after sav
 validation loss. If this is not specified, you have to use trainer.save() to manually save the model at the last epoch.
 
 After training, you can examine that validation loss has reached its minimum by
+
 .. code-block:: python
 
     trainer.plot_loss()
 
 If validation loss is still reducing, you can continue training by
+
 .. code-block:: python
 
     trainer.train_continue(20)
@@ -55,6 +57,7 @@ It's necessary to specify the number of hidden channels in the first layer if it
 
 Testing your model
 ^^^^^^^^^^^^^^^^^^
+
 You should test your model on a separate test set, which ideally should come from different fields than the training
 set and represent a wide range of cases, e.g., exposure times. You may test your model separately on different
 situations.
