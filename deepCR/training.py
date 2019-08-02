@@ -23,7 +23,7 @@ __all__ = 'train'
 class train():
 
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], name='model', hidden=32, gpu=False, epoch=50,
-                 batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=0,
+                 batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5,
                  plot_every=10, verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
@@ -91,6 +91,7 @@ class train():
         self.every = plot_every
         self.directory = directory
         self.verbose = verbose
+        self.mode0_complete = False
 
         if use_tqdm_notebook:
             self.tqdm = tqdm_notebook
@@ -142,25 +143,29 @@ class train():
         """
         if self.verbose:
             print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
-            print('Use batch statistics for batch norm; keep running mean')
+            print('Use batch activate statistics for batch normalization; keep running mean to be used after '
+                  'these epochs')
+            print('')
+        self.train_initial(int(self.n_epochs * 0.4 + 0.5))
+
+        filename = self.save()
+        self.load(filename)
+        self.set_to_eval()
+        if self.verbose:
+            print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
+            print('Batch normalization running statistics frozen and used')
+            print('')
+        self.train_continue(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))
+
+    def train_initial(self, epochs):
         self.network.train()
-        for epoch in self.tqdm(range(int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
+        for epoch in self.tqdm(range(epochs), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
 
-            if self.epoch_mask % self.every==0:
-                plt.figure(figsize=(10, 30))
-                plt.subplot(131)
-                plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
-                plt.title('epoch=%d'%self.epoch_mask)
-                plt.subplot(132)
-                plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy() > 0.5, cmap='gray')
-                plt.title('prediction > 0.5')
-                plt.subplot(133)
-                plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
-                plt.title('ground truth')
-                plt.show()
+            if self.epoch_mask % self.every == 0:
+                self.plot_example()
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % (self.epoch_mask))
@@ -177,27 +182,14 @@ class train():
             if self.verbose:
                 print('')
 
-        filename = self.save()
-        self.load(filename)
-        self.set_to_eval()
-        if self.verbose:
-            print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
-            print('Batch norm running statistics frozen and used')
-            print('')
-        for epoch in self.tqdm(range(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)), disable=self.disable_tqdm):
+    def train_continue(self, epochs):
+        for epoch in self.tqdm(range(epochs), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
             self.epoch_mask += 1
 
             if self.epoch_mask % self.every==0:
-                plt.figure(figsize=(10, 30))
-                plt.subplot(131)
-                plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
-                plt.subplot(132)
-                plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy()>0.5, cmap='gray')
-                plt.subplot(133)
-                plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
-                plt.show()
+                self.plot_example()
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % self.epoch_mask)
@@ -214,8 +206,22 @@ class train():
             if self.verbose:
                 print('')
 
+    def plot_example(self):
+        plt.figure(figsize=(10, 30))
+        plt.subplot(131)
+        plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
+        plt.title('epoch=%d' % self.epoch_mask)
+        plt.subplot(132)
+        plt.imshow(self.pdt_mask[0, 0].detach().cpu().numpy() > 0.5, cmap='gray')
+        plt.title('prediction > 0.5')
+        plt.subplot(133)
+        plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
+        plt.title('ground truth')
+        plt.show()
+
     def set_to_eval(self):
         self.network.eval()
+
     def optimize_network(self, dat):
         self.set_input(*dat)
         self.pdt_mask = self.network(self.img0)

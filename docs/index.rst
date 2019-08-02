@@ -22,8 +22,6 @@ Welcome to the documentation for `deepCR`. You will use `deepCR` to apply a lear
 
 .. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg
 
-This is the documentation for the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted. Code to benchmark the model and to generate figures and tables in the paper can be found in the deepCR-paper Github repo: https://github.com/kmzzhang/deepCR-paper
-
 
 Installation
 ^^^^^^^^^^^^
@@ -40,43 +38,25 @@ Or you can install from source:
    cd deepCR/
    pip install
 
-Quick Start
+Currently available models
 ^^^^^^^^^^^
 
-With Python >=3.5:
+mask:
 
-.. code-block:: python
+    ACS-WFC-F606W-2-4
 
-   from deepCR import deepCR
-   from astropy.io import fits
+    ACS-WFC-F606W-2-32(*)
 
-   image = fits.getdata("*********_flc.fits")
-   mdl = deepCR(mask="ACS-WFC-F606W-2-32",
-            inpaint="ACS-WFC-F606W-2-32",
-                device="GPU")
-   mask, cleaned_image = mdl.clean(image, threshold = 0.5)
+inpaint:
 
-Note:
-Input image must be in units of electrons
+    ACS-WFC-F606W-2-32(*)
 
-To reduce memory consumption (recommended for image larger than 1k x 1k):
+    ACS-WFC-F606W-3-32
 
-.. code-block:: python
+Recommended models are marked in (*). Larger number indicate larger capacity.
 
-   mask, cleaned_image = mdl.clean(image, threshold = 0.5, seg = 256)
+Note that trained models may have input unit or preprocessing requirements. For the ACS-WFC-F606W models, input images must come from *_flc.fits* files which are in units of electrons.
 
-which segments the input image into patches of 256*256, seperately perform CR rejection on the patches, before stitching back to original image size.
-
-Currently available models
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-mask: ACS-WFC-F606W-2-4
-      ACS-WFC-F606W-2-32(*)
-
-inpaint: ACS-WFC-F606W-2-32
-         ACS-WFC-F606W-3-32(*)
-
-The two numbers following instrument configuration specifies model size, with larger number indicating better performing model at the expense of runtime. Recommanded models are marked in (*). For benchmarking of these models, please refer to the original paper.
 
 Limitations and Caveats
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -88,11 +68,6 @@ Contributing
 
 We are very interested in getting bug fixes, new functionality, and new trained models from the community (especially for ground-based imaging and spectroscopy). Please fork this repo and issue a PR with your changes. It will be especially helpful if you add some tests for your changes.
 
-
-How to Use This Guide
----------------------
-
-
 If you run into any issues, please don't hesitate to `open an issue on GitHub
 <https://github.com/profjsb/deepCR/issues>`_.
 
@@ -100,12 +75,7 @@ If you run into any issues, please don't hesitate to `open an issue on GitHub
    :maxdepth: 4
    :caption: Contents:
 
+   tutorial_use
+   tutorial_train
+   model_zoo
    deepCR
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
