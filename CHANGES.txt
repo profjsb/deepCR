@@ -1,3 +1,7 @@
 v0.1.0, July 16, 2019 -- initial release
 
-v0.1.1, v0.1.2 July 21, 2019 -- documentation for PyPi
+v0.1.1, v0.1.2, July 21, 2019 -- documentation for PyPi
+
+v0.1.3, v0.1.4, July 22, 2019 -- arXiv release version
+
+v0.1.5, August 13, 2019 -- added new module: deepCR.train
