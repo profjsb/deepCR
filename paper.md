@@ -20,7 +20,7 @@ affiliations:
    index: 1
  - name: Lawrence Berkeley National Laboratory
    index: 2
-date: 5 August 2019
+date: 15 August 2019
 bibliography: paper.bib
 ---
 
@@ -62,12 +62,13 @@ training models. To apply an available model, ``deepCR`` takes in an input image
  orders of magnitude faster than current state of the art ``LACosmic`` [@lacosmic].
 ![Example of cosmic ray contaminated image cutouts (first row), deepCR
 cosmic ray mask predictions (middle row), and original image with artifact
-pixels replaced with deepCR predictions (last row).](imgs/postage-sm.png)
+pixels replaced with deepCR predictions 
+(last row).](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
  
 
 In the paper accompanying ``deepCR`` [@deepcr], the authors showed that 
 on Hubble Space Telescope (HST) ACS/WFC data, 
-``deepCR`` is more robost, and at least as fast as the current 
+``deepCR`` is more robust, and at least as fast as the current 
 state-of-the-art single frame cosmic ray rejection package, ``LACosmic``. The API 
 of ``deepCR`` serve as a drop in replacement for ``LACosmic``, 
 so that users may experiment with different packages easily. At 
