@@ -83,6 +83,18 @@ large amounts of precious observational and computational resources.
 
 # Acknowledgements
 
-This work was supported by a Gordon and Betty Moore Foundation Data-Driven Discovery grant.
+This work was supported by a Gordon and Betty Moore Foundation Data-Driven Discovery grant, 
+and has made use of the following software:
+
+astropy [@astropy]
+astrodrizzle [@astrodrizzle]
+numpy [@vdw11]
+scipy [@scipy]
+matplotlib [@matplotlib] 
+astroscrappy [@astroscrappy]
+pytorch [@pytorch]
+Jupyter [@jupyter]
+Scikit-image [@scikit-image]
+
 
 # References
