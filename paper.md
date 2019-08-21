@@ -52,7 +52,8 @@ the legend to the lower left. Unfilled boxes to the right of blue arrows represe
 feature maps directly copied from the left, which are to be concatenated with the 
 adjacent feature map. To apply the inpainting model, the predicted mask (dotted box 
 at left) is concatenated with the original image as the input.
-![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/network.png)
+
+![Figure 2](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/network.png)
 
  
 Since ``deepCR`` is based on deep learning, different models trained on
@@ -75,9 +76,9 @@ The figure below shows examples of cosmic ray contaminated image cutouts (first 
  deepCR cosmic ray mask predictions (middle row), and original image with artifact
 pixels replaced with deepCR predictions 
 (last row).
-![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
- 
 
+![Figure 2](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
+ 
 In the paper accompanying ``deepCR`` [@deepcr], the authors showed that 
 on Hubble Space Telescope (HST) ACS/WFC data, 
 ``deepCR`` is more robust, and at least as fast as the current 
