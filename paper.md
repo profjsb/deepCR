@@ -74,7 +74,8 @@ training models. To apply an available model, ``deepCR`` takes in an input image
 The figure below shows examples of cosmic ray contaminated image cutouts (first row),
  deepCR cosmic ray mask predictions (middle row), and original image with artifact
 pixels replaced with deepCR predictions 
-(last row).![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
+(last row).
+![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
  
 
 In the paper accompanying ``deepCR`` [@deepcr], the authors showed that 
