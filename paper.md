@@ -43,7 +43,18 @@ exposures can be sub-optimal or infeasible. These cases would require specialize
 algorithms to detect cosmic rays in single images.
 
 ``deepCR`` is a Python package for single frame cosmic ray rejection which is
-based on deep learning and written with the Pytorch framework [@pytorch]. 
+based on deep learning and written with the Pytorch framework [@pytorch].
+The figure below shows the neural network architecture of ``deepCR``. Feature 
+maps are represented by gray boxes while the number of channels and example 
+feature map dimensions are indicated on the top of and to the left of each 
+feature map, respectively. Different computational operations are marked in 
+the legend to the lower left. Unfilled boxes to the right of blue arrows represent 
+feature maps directly copied from the left, which are to be concatenated with the 
+adjacent feature map. To apply the inpainting model, the predicted mask (dotted box 
+at left) is concatenated with the original image as the input.
+![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/network.png)
+
+ 
 Since ``deepCR`` is based on deep learning, different models trained on
 data taken with different instrument configurations are required, when applied to different
 data. The current version of ``deepCR`` is prepackaged with model for Hubble 
@@ -60,10 +71,10 @@ training models. To apply an available model, ``deepCR`` takes in an input image
  On GPU, training a new model takes as short as 20 minutes, 
  while applying ``deepCR`` on a 10 Mpix image requires less than 0.2 second, 
  orders of magnitude faster than current state of the art ``LACosmic`` [@lacosmic].
-![Example of cosmic ray contaminated image cutouts (first row), deepCR
-cosmic ray mask predictions (middle row), and original image with artifact
+The figure below shows examples of cosmic ray contaminated image cutouts (first row),
+ deepCR cosmic ray mask predictions (middle row), and original image with artifact
 pixels replaced with deepCR predictions 
-(last row).](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
+(last row).![](https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg)
  
 
 In the paper accompanying ``deepCR`` [@deepcr], the authors showed that 
