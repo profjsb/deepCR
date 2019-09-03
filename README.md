@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/profjsb/deepCR.svg?token=baKtC9yCzzwzzqM9ihAX&branch=master)](https://travis-ci.com/profjsb/deepCR) [![codecov](https://codecov.io/gh/profjsb/deepCR/branch/master/graph/badge.svg?token=SIwJFmKJqr)](https://codecov.io/gh/profjsb/deepCR)
-[![Documentation Status](https://readthedocs.org/projects/deepcr/badge/?version=latest)](https://deepcr.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/deepcr/badge/?version=latest)](https://deepcr.readthedocs.io/en/latest/?badge=latest) [![DOI](https://joss.theoj.org/papers/10.21105/joss.01651/status.svg)](https://doi.org/10.21105/joss.01651) [![arXiv](https://img.shields.io/badge/astro--ph-1907.09500-blue)](https://arxiv.org/abs/1907.09500) 
 
 ## deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
 
