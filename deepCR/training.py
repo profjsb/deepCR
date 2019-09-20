@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from deepCR.util import maskMetric
-from deepCR.dataset import dataset
+from deepCR.dataset import dataset, DatasetSim
 from deepCR.unet import WrappedModel, UNet2Sigmoid
 
 __all__ = 'train'
@@ -22,7 +22,7 @@ __all__ = 'train'
 
 class train():
 
-    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], name='model', hidden=32, gpu=False, epoch=50,
+    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], n_mask=1, name='model', hidden=32, gpu=False, epoch=50,
                  batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5,
                  plot_every=10, verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
         """ This is the class for training deepCR-mask.
@@ -34,6 +34,7 @@ class train():
           [aug_sky[0] * sky, aug_sky[1] * sky]. This serves as a regularizers to allow the trained model to adapt to a
           wider range of sky background or equivalently exposure time. Remedy the fact that exposure time in the
           training set is discrete and limited.
+        :param n_mask: number of dark images to sample to create one cosmic ray image and mask
         :param name: model name. model saved to name_epoch.pth
         :param hidden: number of channels for the first convolution layer. default: 50
         :param gpu: True if use GPU for training
@@ -57,12 +58,16 @@ class train():
             raise AttributeError('Var (sky) is required for sky background augmentation!')
         if ignore is None:
             ignore = np.zeros_like(image)
-        assert image.shape == mask.shape == ignore.shape
-        assert image.shape[1] == image.shape[2]
-        data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
-        data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
-        self.TrainLoader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=1)
-        self.ValLoader = DataLoader(data_val, batch_size=batch_size, shuffle=False, num_workers=1)
+        if type(image) == np.ndarray and len(image.shape) == 3:
+            assert image.shape == mask.shape == ignore.shape
+            assert image.shape[1] == image.shape[2]
+            data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
+            data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
+        elif type(image[0]) == 'str':
+            data_train = dataset_sim(image, mask, ignore, sky, part='train', aug_sky=aug_sky, n_mask=n_mask)
+            data_val = dataset_sim(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
+        self.TrainLoader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
+        self.ValLoader = DataLoader(data_val, batch_size=batch_size, shuffle=False, num_workers=8)
         self.shape = image.shape[1]
         self.name = name
 
@@ -98,7 +103,6 @@ class train():
         else:
             self.tqdm = tqdm
         self.disable_tqdm = not (use_tqdm_notebook or use_tqdm)
-
 
     def set_input(self, img0, mask, ignore):
         """
