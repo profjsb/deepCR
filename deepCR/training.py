@@ -64,11 +64,13 @@ class train():
             data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
             data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
         elif type(image[0]) == 'str':
-            data_train = dataset_sim(image, mask, ignore, sky, part='train', aug_sky=aug_sky, n_mask=n_mask)
-            data_val = dataset_sim(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
+            data_train = DatasetSim(image, mask, ignore, sky, part='train', aug_sky=aug_sky, n_mask=n_mask)
+            data_val = DatasetSim(image, mask, ignore, sky, part='val', aug_sky=aug_sky, n_mask=n_mask)
+        else:
+            raise TypeError('Input must be numpy data arrays or list of file paths!')
         self.TrainLoader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
         self.ValLoader = DataLoader(data_val, batch_size=batch_size, shuffle=False, num_workers=8)
-        self.shape = image.shape[1]
+        self.shape = data_train[0][0].shape[1]
         self.name = name
 
         if gpu:

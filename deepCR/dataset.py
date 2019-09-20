@@ -5,7 +5,7 @@ __all__ = ['dataset', 'DatasetSim']
 
 
 class DatasetSim(Dataset):
-    def __init__(self, image, cr, ignore=None, sky=None, aug_sky=[0, 0], n_mask=1, part=None, f_val=0.1, seed=1):
+    def __init__(self, image, cr, sky=None, aug_sky=[0, 0], n_mask=1, part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
         :param image: list of complete path to npy arrays, each containing one 2D image
         :param cr: list of complete path to npy arrays, each containing one 2D mask
@@ -37,7 +37,7 @@ class DatasetSim(Dataset):
             sky = np.zeros_like(image)
         elif type(sky) == float:
             sky = np.array([sky]*self.len_image)
-        if ignore is None:
+        if np.load(image[0]).shape[0] == 2:
             ignore = np.zeros_like(image)
 
         self.image = image[slice]
@@ -62,14 +62,19 @@ class DatasetSim(Dataset):
         crs = np.concatenate(crs).sum(axis=0)
         return crs, masks
 
+    def get_image(self, i):
+        data = np.load(self.image[i])
+        return data[0], data[1]
+
     def __len__(self):
         return self.len_image
 
     def __getitem__(self, i):
         cr, mask = self.get_cr()
+        image, ignore = self.get_image(i)
         bkg = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0])) * self.sky[i]
-        img = self.image[i] + bkg + cr
-        return img, mask, self.ignore[i]
+        img = image + bkg + cr
+        return img, mask, ignore
 
 
 class dataset(Dataset):
