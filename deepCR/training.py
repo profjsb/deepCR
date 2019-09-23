@@ -159,7 +159,7 @@ class train():
             print('Use batch activate statistics for batch normalization; keep running mean to be used after '
                   'these epochs')
             print('')
-        self.train_initial(int(self.n_epochs * 0.4 + 0.5))
+        self.train_phase0(int(self.n_epochs * 0.4 + 0.5))
 
         filename = self.save()
         self.load(filename)
@@ -168,9 +168,9 @@ class train():
             print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
             print('Batch normalization running statistics frozen and used')
             print('')
-        self.train_continue(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))
+        self.train_phase1(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))
 
-    def train_initial(self, epochs):
+    def train_phase0(self, epochs):
         self.network.train()
         for epoch in self.tqdm(range(epochs), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
@@ -195,7 +195,7 @@ class train():
             if self.verbose:
                 print('')
 
-    def train_continue(self, epochs):
+    def train_phase1(self, epochs):
         for epoch in self.tqdm(range(epochs), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)

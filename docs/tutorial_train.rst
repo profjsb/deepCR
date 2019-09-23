@@ -42,7 +42,7 @@ If validation loss is still reducing, you can continue training by
 
 .. code-block:: python
 
-    trainer.train_continue(20)
+    trainer.train_phase1(20)
 
 Do not use trainer.train(). Specify number of additional epochs.
 

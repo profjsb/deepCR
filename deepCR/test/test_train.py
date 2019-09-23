@@ -12,18 +12,13 @@ def test_train():
     trainer.train()
     filename = trainer.save()
     trainer.load(filename)
-    trainer.train_continue(1)
+    trainer.train_phase1(1)
     assert trainer.epoch_mask == 3
+
 
 def test_train_sim():
     cwd = os.getcwd()+'/'
-    if 'temp' in os.listdir(cwd):
-        for root, dirs, files in os.walk(cwd+'temp', topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-        os.rmdir('temp')
+
     os.mkdir('temp')
     os.mkdir('temp/image')
     os.mkdir('temp/dark')
@@ -39,8 +34,15 @@ def test_train_sim():
     trainer.train()
     filename = trainer.save()
     trainer.load(filename)
-    trainer.train_continue(1)
+    trainer.train_phase1(1)
     assert trainer.epoch_mask == 3
+
+    for root, dirs, files in os.walk(cwd + 'temp', topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    os.rmdir('temp')
 
 
 if __name__ == '__main__':
