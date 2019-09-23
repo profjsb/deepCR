@@ -22,9 +22,11 @@ __all__ = 'train'
 
 class train():
 
-    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, name='model', hidden=32, epoch=50,
-                 batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5,
-                 plot_every=10, verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
+    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, name='model',
+                 hidden=32, epoch=50, epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True,
+                 lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5, plot_every=10,
+                 verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
+
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
         :param mask: np.ndarray (N*W*W) training data: CR mask array
@@ -102,6 +104,10 @@ class train():
         self.epoch_mask = 0
         self.save_after = save_after
         self.n_epochs = epoch
+        if epoch_phase0 is None:
+            self.n_epochs_phase0 = int(self.n_epochs * 0.4 + 0.5)
+        else:
+            self.n_epochs_phase0 = epoch_phase0
         self.every = plot_every
         self.directory = directory
         self.verbose = verbose
@@ -155,20 +161,20 @@ class train():
         :return: None
         """
         if self.verbose:
-            print('Begin first {} epochs of training'.format(int(self.n_epochs * 0.4 + 0.5)))
+            print('Begin first {} epochs of training'.format(self.n_epochs_phase0))
             print('Use batch activate statistics for batch normalization; keep running mean to be used after '
                   'these epochs')
             print('')
-        self.train_phase0(int(self.n_epochs * 0.4 + 0.5))
+        self.train_phase0(self.n_epochs_phase0)
 
         filename = self.save()
         self.load(filename)
         self.set_to_eval()
         if self.verbose:
-            print('Continue onto next {} epochs of training'.format(self.n_epochs - int(self.n_epochs * 0.4 + 0.5)))
+            print('Continue onto next {} epochs of training'.format(self.n_epochs - self.n_epochs_phase0))
             print('Batch normalization running statistics frozen and used')
             print('')
-        self.train_phase1(self.n_epochs - int(self.n_epochs * 0.4 + 0.5))
+        self.train_phase1(self.n_epochs - self.n_epochs_phase0)
 
     def train_phase0(self, epochs):
         self.network.train()

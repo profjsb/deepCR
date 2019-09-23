@@ -34,11 +34,9 @@ class DatasetSim(Dataset):
             slice = np.s_[0:]
 
         if sky is None:
-            sky = np.zeros_like(image)
+            sky = np.zeros(self.len_image)
         elif type(sky) != np.ndarray:
             sky = np.array([sky]*self.len_image)
-        if np.load(image[0]).shape[0] == 2:
-            ignore = np.zeros_like(image)
 
         self.image = image[slice]
         self.cr = cr[slice]

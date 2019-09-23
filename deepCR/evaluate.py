@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm as tqdm
 
 from deepCR.util import maskMetric
-from deepCR.dataset import dataset
+from deepCR.dataset import dataset, DatasetSim
 
 
 __all__ = ['roc']
@@ -32,7 +32,7 @@ def _roc(model, data, thresholds):
     return tpr * 100, fpr * 100
 
 
-def roc(model, image, mask, ignore=None, thresholds=np.linspace(0.001, 0.999, 500)):
+def roc(model, image, mask, ignore=None, sky=None, n_mask=1, seed=1, thresholds=np.linspace(0.001, 0.999, 500)):
     """ evaluate model on test set with the ROC curve
 
     :param model: deepCR object
@@ -42,6 +42,12 @@ def roc(model, image, mask, ignore=None, thresholds=np.linspace(0.001, 0.999, 50
     :param thresholds: np.ndarray(N) FPR grid on which to evaluate ROC curves
     :return: np.ndarray(N), np.ndarray(N): TPR and FPR
     """
-    data = dataset(image=image, mask=mask, ignore=ignore)
+    if type(image) == np.ndarray and len(image.shape) == 3:
+        data = dataset(image, mask, ignore)
+    elif type(image[0]) == str:
+        data = DatasetSim(image, mask, sky=sky, n_mask=n_mask, seed=seed)
+    else:
+        raise TypeError('Input must be numpy data arrays or list of file paths!')
+
     tpr, fpr = _roc(model, data, thresholds=thresholds)
     return tpr, fpr
