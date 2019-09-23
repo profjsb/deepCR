@@ -42,6 +42,7 @@ class deepCR():
         None
             """
         if device == 'GPU':
+            assert torch.cuda.is_available()
             self.dtype = torch.cuda.FloatTensor
             self.dint = torch.cuda.ByteTensor
             wrapper = nn.DataParallel

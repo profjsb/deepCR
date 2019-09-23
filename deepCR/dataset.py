@@ -5,7 +5,7 @@ __all__ = ['dataset', 'DatasetSim']
 
 
 class DatasetSim(Dataset):
-    def __init__(self, image, cr, sky=None, aug_sky=[0, 0], n_mask=1, part=None, f_val=0.1, seed=1):
+    def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
         :param image: list of complete path to npy arrays, each containing one 2D image
         :param cr: list of complete path to npy arrays, each containing one 2D mask
@@ -35,16 +35,19 @@ class DatasetSim(Dataset):
 
         if sky is None:
             sky = np.zeros_like(image)
-        elif type(sky) == float:
+        elif type(sky) != np.ndarray:
             sky = np.array([sky]*self.len_image)
         if np.load(image[0]).shape[0] == 2:
             ignore = np.zeros_like(image)
 
         self.image = image[slice]
         self.cr = cr[slice]
-        self.ignore = ignore[slice]
         self.sky = sky[slice]
         self.aug_sky = aug_sky
+        self.aug_img = aug_img
+
+        self.len_image = len(self.image)
+        self.len_mask = len(self.cr)
 
     def get_cr(self):
         """
@@ -56,8 +59,8 @@ class DatasetSim(Dataset):
         crs = []; masks = []
         for i in cr_id:
             arr = np.load(self.cr[i])
-            crs.append(arr[0])
-            masks.append(arr[1])
+            crs.append(arr[0][None,:])
+            masks.append(arr[1][None,:])
         masks = np.concatenate(masks).sum(axis=0) > 0
         crs = np.concatenate(crs).sum(axis=0)
         return crs, masks
@@ -72,8 +75,10 @@ class DatasetSim(Dataset):
     def __getitem__(self, i):
         cr, mask = self.get_cr()
         image, ignore = self.get_image(i)
-        bkg = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0])) * self.sky[i]
-        img = image + bkg + cr
+        f_bkg_aug = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0]))
+        f_img_aug = (self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0]))
+        bkg = f_bkg_aug * self.sky[i]
+        img = image * f_img_aug + bkg + cr
         return img, mask, ignore
 
 

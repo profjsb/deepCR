@@ -22,7 +22,7 @@ __all__ = 'train'
 
 class train():
 
-    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], n_mask=1, name='model', hidden=32, gpu=False, epoch=50,
+    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, name='model', hidden=32, epoch=50,
                  batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5,
                  plot_every=10, verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
         """ This is the class for training deepCR-mask.
@@ -54,7 +54,13 @@ class train():
         :param use_tqdm_notebook: whether to use jupyter notebook version of tqdm. Overwrites tqdm_default.
         :param directory: directory relative to current path to save trained model.
         """
-        if sky is None and aug_sky != [0, 0]:
+        if torch.cuda.is_available():
+            gpu = True
+        else:
+            gpu = False
+            print('No GPU detected on this device! Training on CPU.')
+
+        if sky is None and aug_sky != (0, 0):
             raise AttributeError('Var (sky) is required for sky background augmentation!')
         if ignore is None:
             ignore = np.zeros_like(image)
@@ -63,11 +69,12 @@ class train():
             assert image.shape[1] == image.shape[2]
             data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
             data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
-        elif type(image[0]) == 'str':
-            data_train = DatasetSim(image, mask, ignore, sky, part='train', aug_sky=aug_sky, n_mask=n_mask)
-            data_val = DatasetSim(image, mask, ignore, sky, part='val', aug_sky=aug_sky, n_mask=n_mask)
+        elif type(image[0]) == str:
+            data_train = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, part='train', n_mask=n_mask)
+            data_val = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, part='val', n_mask=n_mask)
         else:
             raise TypeError('Input must be numpy data arrays or list of file paths!')
+
         self.TrainLoader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
         self.ValLoader = DataLoader(data_val, batch_size=batch_size, shuffle=False, num_workers=8)
         self.shape = data_train[0][0].shape[1]
