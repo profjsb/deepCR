@@ -65,7 +65,10 @@ class DatasetSim(Dataset):
 
     def get_image(self, i):
         data = np.load(self.image[i])
-        return data[0], data[1]
+        if len(data.shape) == 3:
+            return data[0], data[1]
+        else:
+            return data, np.zeros_like(data)
 
     def __len__(self):
         return self.len_image
@@ -76,7 +79,8 @@ class DatasetSim(Dataset):
         f_bkg_aug = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0]))
         f_img_aug = (self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0]))
         bkg = f_bkg_aug * self.sky[i]
-        img = image * f_img_aug + bkg + cr
+        img_bkgsub = image - self.sky[i]
+        img = img_bkgsub * f_img_aug + bkg + cr
         return img, mask, ignore
 
 
