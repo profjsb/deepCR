@@ -100,7 +100,7 @@ class deepCR():
         """
 
         # data pre-processing
-        img0 = img0.astype(np.float32) / self.scale
+        img0.astype(np.float32) / self.scale
 
         if not segment and not parallel:
             return self.clean_(img0, threshold=threshold,

@@ -113,6 +113,7 @@ class train:
 
         else:
             self.lr_scheduler = VoidLRScheduler()
+        self.lr = lr
         self.BCELoss = nn.BCELoss()
         self.validation_loss = []
         self.epoch_mask = 0
@@ -181,6 +182,7 @@ class train:
 
         filename = self.save()
         self.load(filename)
+        self.optimizer = optim.Adam(self.network.parameters(), lr=self.lr/2.5)
 
         if self.verbose:
             print('Continue onto next {} epochs of training'.format(self.n_epochs - self.n_epochs_phase0))
