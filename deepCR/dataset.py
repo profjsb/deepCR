@@ -5,7 +5,7 @@ __all__ = ['dataset', 'DatasetSim']
 
 
 class DatasetSim(Dataset):
-    def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, part=None, f_val=0.1, seed=1):
+    def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, n_mask=1, part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
         :param image: list of complete path to npy arrays, each containing one 2D image
         :param cr: list of complete path to npy arrays, each containing one 2D mask
@@ -24,6 +24,7 @@ class DatasetSim(Dataset):
         self.len_image = len(image)
         self.len_mask = len(cr)
         self.n_mask = n_mask
+        self.noise = noise
 
         f_train = 1 - f_val
         if part == 'train':
@@ -82,8 +83,13 @@ class DatasetSim(Dataset):
         f_bkg_aug = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0]))
         f_img_aug = (self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0]))
         bkg = f_bkg_aug * self.sky[i]
-        img_bkgsub = image - self.sky[i]
-        img = img_bkgsub * f_img_aug + bkg + cr
+        img = (image + bkg) * f_img_aug + cr
+        if self.noise:
+            noise = np.random.normal(0, img**0.5, image.shape)
+        else:
+            noise = np.zeros_like(image)
+        img += noise
+
         return img, mask, ignore
 
 

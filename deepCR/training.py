@@ -33,8 +33,8 @@ class VoidLRScheduler:
 
 class train:
 
-    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, name='model',
-                 hidden=32, epoch=50, epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True,
+    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, n_mask=1,
+                 name='model', hidden=32, epoch=50, epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True,
                  lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5, plot_every=10,
                  verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
 
@@ -83,8 +83,10 @@ class train:
             data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
             data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
         elif type(image[0]) == str:
-            data_train = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, part='train', n_mask=n_mask)
-            data_val = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, part='val', n_mask=n_mask)
+            data_train = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img,
+                                    part='train', noise=noise, n_mask=n_mask)
+            data_val = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img,
+                                  part='val', noise=noise, n_mask=n_mask)
         else:
             raise TypeError('Input must be numpy data arrays or list of file paths!')
 
@@ -172,7 +174,7 @@ class train:
         """
         if self.verbose:
             print('Begin first {} epochs of training'.format(self.n_epochs_phase0))
-            print('Use batch activate statistics for batch normalization; keep running mean to be used after '
+            print('Use batch statistics for batch normalization; keep running statistics to be used in phase1'
                   'these epochs')
             print('')
         self.train_phase0(self.n_epochs_phase0)
