@@ -5,7 +5,8 @@ __all__ = ['dataset', 'DatasetSim']
 
 
 class DatasetSim(Dataset):
-    def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, n_mask=1, part=None, f_val=0.1, seed=1):
+    def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, saturation=1e5,
+                 n_mask=1, part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
         :param image: list of complete path to npy arrays, each containing one 2D image
         :param cr: list of complete path to npy arrays, each containing one 2D mask
@@ -25,6 +26,7 @@ class DatasetSim(Dataset):
         self.len_mask = len(cr)
         self.n_mask = n_mask
         self.noise = noise
+        self.saturation = saturation
 
         f_train = 1 - f_val
         if part == 'train':
@@ -89,6 +91,7 @@ class DatasetSim(Dataset):
         else:
             noise = np.zeros_like(image)
         img += noise
+        img[img>self.saturation] = self.saturation
 
         return img, mask, ignore
 
