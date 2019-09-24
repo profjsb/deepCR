@@ -86,8 +86,11 @@ class DatasetSim(Dataset):
         f_img_aug = (self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0]))
         bkg = f_bkg_aug * self.sky[i]
         img = (image + bkg) * f_img_aug + cr
+        scale = img.copy()
+        scale[scale < 1] = 1
+        scale = scale**0.5
         if self.noise:
-            noise = np.random.normal(0, img**0.5, image.shape)
+            noise = np.random.normal(0, scale, image.shape)
         else:
             noise = np.zeros_like(image)
         img += noise
