@@ -20,7 +20,18 @@ from deepCR.unet import WrappedModel, UNet2Sigmoid
 __all__ = 'train'
 
 
-class train():
+class VoidLRScheduler:
+    def __init__(self):
+        pass
+
+    def _reset(self):
+        pass
+
+    def step(self):
+        pass
+
+
+class train:
 
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), n_mask=1, name='model',
                  hidden=32, epoch=50, epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True,
@@ -97,8 +108,9 @@ class train():
         if auto_lr_decay:
             self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=lr_decay_factor, patience=lr_decay_patience,
                                                   cooldown=2, verbose=True, threshold=0.005)
+
         else:
-            self.lr_scheduler = self._void_lr_scheduler
+            self.lr_scheduler = VoidLRScheduler()
         self.BCELoss = nn.BCELoss()
         self.validation_loss = []
         self.epoch_mask = 0
@@ -129,10 +141,6 @@ class train():
         self.img0 = Variable(img0.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
-
-    @staticmethod
-    def _void_lr_scheduler(self, metric):
-        pass
 
     def validate_mask(self):
         """
@@ -171,7 +179,7 @@ class train():
 
         filename = self.save()
         self.load(filename)
-        self.set_to_eval()
+
         if self.verbose:
             print('Continue onto next {} epochs of training'.format(self.n_epochs - self.n_epochs_phase0))
             print('Batch normalization running statistics frozen and used')
@@ -204,6 +212,8 @@ class train():
                 print('')
 
     def train_phase1(self, epochs):
+        self.set_to_eval()
+        self.lr_scheduler._reset()
         for epoch in self.tqdm(range(epochs), disable=self.disable_tqdm):
             for t, dat in enumerate(self.TrainLoader):
                 self.optimize_network(dat)
