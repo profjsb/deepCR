@@ -18,7 +18,8 @@ deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
 :target: https://deepcr.readthedocs.io/en/latest/?badge=latest
 :alt: Documentation Status
 
-Welcome to the documentation for `deepCR`. You will use `deepCR` to apply a learned convolutional neural net (CNN) model to a 2d ``numpy`` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
+Welcome to the documentation for `deepCR`. You will use `deepCR` to apply a learned convolutional neural net (CNN) model
+ to a 2d ``numpy`` array to identify and remove cosmic rays, on multi-core CPUs or GPUs.
 
 .. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg
 
@@ -39,29 +40,16 @@ Or you can install from source:
    pip install
 
 Currently available models
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
 
-mask:
+   from deepCR import deepCR
+   decam_model = deepCR(mask='decam', device='CPU')
+   acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+```
 
-    ACS-WFC-F606W-2-4
+For detailed descriptions and requirements of currently available models, please visit the model_zoo page below.
 
-    ACS-WFC-F606W-2-32(*)
-
-inpaint:
-
-    ACS-WFC-F606W-2-32(*)
-
-    ACS-WFC-F606W-3-32
-
-Recommended models are marked in (*). Larger number indicate larger capacity.
-
-Note that trained models may have input unit or preprocessing requirements. For the ACS-WFC-F606W models, input images must come from *_flc.fits* files which are in units of electrons.
-
-
-Limitations and Caveats
-^^^^^^^^^^^^^^^^^^^^^^^
-
-In the current release, the included models have been built and tested only on Hubble Space Telescope (HST) ACS/WFC images in the F606W filter. Application to native-spatial resolution (ie. not drizzled), calibrated images from ACS/F606W (\ ``*_flc.fits``\ ) is expected to work well. Use of these prepackaged models in other observing modes with HST or spectroscopy is not encouraged. We are planning hosting a "model zoo" that would allow deepCR to be adapted to a wide range of instrument configurations.
 
 Contributing
 ^^^^^^^^^^^^

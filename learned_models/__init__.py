@@ -5,6 +5,7 @@ __all__ = ('mask_dict', 'inpaint_dict', 'default_model_path')
 
 mask_dict = {'ACS-WFC-F606W-2-32': [UNet2Sigmoid, (1, 1, 32), 100],
              'ACS-WFC-F606W-2-4': [UNet2Sigmoid, (1, 1, 4), 100],
+             'decam': [UNet2Sigmoid, (1, 1, 32), 1],
              'example_model': [UNet2Sigmoid, (1, 1, 32), 100]}
 
 inpaint_dict = {'ACS-WFC-F606W-3-32': [UNet3, (2, 1, 32)],

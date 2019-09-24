@@ -7,16 +7,24 @@ Identify and remove cosmic rays from astronomical images using trained convoluti
 
 Documentation and tutorials: https://deepcr.readthedocs.io/
 
-This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted.
-
-Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
-
+This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), ApJ accepted.
 If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500 and consider including a
 link to this repository.
 
-Note: the current release includes only model for HST ACS/WFC.
+Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
+
+
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
+
+### New for v0.2.0
+
+DECam deepCR model now available!
+```python
+from deepCR import deepCR
+decam_model = deepCR(mask='decam', device='CPU')
+acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+```
 
 ### Installation
 
@@ -84,27 +92,16 @@ Note that this won't speed things up if you're using GPU!
 
 ### Currently available models
 
-mask:
+```python
+from deepCR import deepCR
+decam_model = deepCR(mask='decam', device='CPU')
+acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+```
 
-    ACS-WFC-F606W-2-4
-
-    ACS-WFC-F606W-2-32(*)
-
-inpaint:
-
-    ACS-WFC-F606W-2-32(*)
-
-    ACS-WFC-F606W-3-32
-
-Recommended models are marked in (*). Larger number indicate larger capacity.
-
-Input images should come from *_flc.fits* files which are in units of electrons.
-
-### Limitations and Caveats
-
-The currently included models are trained and benchmarked on HST ACS/WFC images in the F606W filter.
-
-Visual inspection shows that these models also work well on filters from F435W to F814W. However, users should use a higher threshold (e.g. 0.9) for short wavelength filters to minimize false detections, if any.
+**ACS/WFC model**: Input images for the ACS/WFC model should come from *_flc.fits* files which are in units of electrons.
+The current ACS/WFC model is trained and benchmarked on HST ACS/WFC images in the F606W filter.
+Visual inspection shows that these models also work well on filters from F435W to F814W. However, users should use a 
+higher threshold for images of denser fields in short wavelength filters to minimize false detections, if any.
 
 ### Contributing
 

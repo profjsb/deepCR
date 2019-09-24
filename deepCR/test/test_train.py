@@ -30,7 +30,7 @@ def test_train_sim():
     image_list = [cwd + 'temp/image/' + f for f in os.listdir(cwd + 'temp/image')]
     dark_list = [cwd + 'temp/dark/' + f for f in os.listdir(cwd + 'temp/dark')]
     trainer = train(image=image_list, mask=dark_list, sky=100, aug_sky=[-0.9, 10], aug_img=[0.5, 5],
-                    n_mask=2, epoch=2, verbose=False)
+                    n_mask_train=2, n_mask_val=1, epoch=2, verbose=False)
     trainer.train()
     filename = trainer.save()
     trainer.load(filename)
