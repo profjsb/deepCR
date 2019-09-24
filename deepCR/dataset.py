@@ -28,10 +28,13 @@ class DatasetSim(Dataset):
         f_train = 1 - f_val
         if part == 'train':
             slice = np.s_[:int(self.len_image * f_train)]
+            slice_cr = np.s_[:int(self.len_mask * f_train)]
         elif part == 'val':
             slice = np.s_[int(self.len_image * f_train):]
+            slice_cr = np.s_[:int(self.len_mask * f_train)]
         else:
             slice = np.s_[0:]
+            slice_cr = np.s_[0:]
 
         if sky is None:
             sky = np.zeros(self.len_image)
@@ -39,7 +42,7 @@ class DatasetSim(Dataset):
             sky = np.array([sky]*self.len_image)
 
         self.image = image[slice]
-        self.cr = cr[slice]
+        self.cr = cr[slice_cr]
         self.sky = sky[slice]
         self.aug_sky = aug_sky
         self.aug_img = aug_img
