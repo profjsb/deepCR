@@ -138,6 +138,8 @@ class train():
         """
         :return: validation loss. print TPR and FPR at threshold = 0.5.
         """
+        torch.random.manual_seed(0)
+        np.random.seed(0)
         lmask = 0; count = 0
         metric = np.zeros(4)
         for i, dat in enumerate(self.ValLoader):
@@ -187,7 +189,7 @@ class train():
                 self.plot_example()
 
             if self.verbose:
-                print('----------- epoch = %d -----------' % (self.epoch_mask))
+                print('----------- epoch = %d -----------' % self.epoch_mask)
             val_loss = self.validate_mask()
             self.validation_loss.append(val_loss)
             if self.verbose:
