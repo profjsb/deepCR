@@ -25,14 +25,15 @@ def test_DatasetSim():
     os.mkdir('temp/image')
     os.mkdir('temp/dark')
 
-    var = np.zeros((2, 64, 64))
+    var = np.random.rand(2, 64, 64)
     for i in range(10):
         np.save(cwd + 'temp/image/%d.npy' % i, var)
         np.save(cwd + 'temp/dark/%d.npy' % i, var)
     image_list = [cwd + 'temp/image/' + f for f in os.listdir(cwd + 'temp/image')]
     dark_list = [cwd + 'temp/dark/' + f for f in os.listdir(cwd + 'temp/dark')]
 
-    data = DatasetSim(image=image_list, cr=dark_list, sky=100, part='train', aug_sky=[1, 1], aug_img=[0.5, 2], f_val=0.1)
+    data = DatasetSim(image=image_list, cr=dark_list, sky=100, part='train', aug_sky=[1, 1], aug_img=[0.5, 2],
+                      norm=True, f_val=0.1)
     data0 = data[0]
     assert len(data) == 9
     assert data0[0].shape == (64, 64)

@@ -102,8 +102,7 @@ class DatasetSim(Dataset):
             limit = np.percentile(img, self.percentile_limit)
             clip = img[img < limit]
             mean = clip.mean()
-            scale = clip.scale()
-            # mean, scale = bkg_estimate(img)
+            scale = clip.std()
             img -= mean
             img /= scale
 

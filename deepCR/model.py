@@ -109,7 +109,7 @@ class deepCR():
             limit = np.percentile(img0, self.percentile)
             clip = img0[img0 < limit]
             mean = clip.mean()
-            scale = clip.scale()
+            scale = clip.std()
             img0 -= mean
             img0 /= scale
 
