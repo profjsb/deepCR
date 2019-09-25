@@ -92,16 +92,7 @@ Note that this won't speed things up if you're using GPU!
 
 ### Currently available models
 
-```python
-from deepCR import deepCR
-decam_model = deepCR(mask='decam', device='CPU')
-acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
-```
 
-**ACS/WFC model**: Input images for the ACS/WFC model should come from *_flc.fits* files which are in units of electrons.
-The current ACS/WFC model is trained and benchmarked on HST ACS/WFC images in the F606W filter.
-Visual inspection shows that these models also work well on filters from F435W to F814W. However, users should use a 
-higher threshold for images of denser fields in short wavelength filters to minimize false detections, if any.
 
 ### Contributing
 

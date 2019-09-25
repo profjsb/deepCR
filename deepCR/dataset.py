@@ -1,12 +1,12 @@
 import numpy as np
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, bkg_estimate
 
 __all__ = ['dataset', 'DatasetSim']
 
 
 class DatasetSim(Dataset):
     def __init__(self, image, cr, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, saturation=1e5,
-                 n_mask=1, part=None, f_val=0.1, seed=1):
+                 n_mask=1, norm=False, part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
         :param image: list of complete path to npy arrays, each containing one 2D image
         :param cr: list of complete path to npy arrays, each containing one 2D mask
@@ -49,6 +49,7 @@ class DatasetSim(Dataset):
         self.sky = sky[slice]
         self.aug_sky = aug_sky
         self.aug_img = aug_img
+        self.norm = norm
 
         self.len_image = len(self.image)
         self.len_mask = len(self.cr)
@@ -95,6 +96,15 @@ class DatasetSim(Dataset):
             noise = np.zeros_like(image)
         img += noise
         img[img>self.saturation] = self.saturation
+
+        if self.norm:
+            #limit = np.percentile(img, self.percentile_limit)
+            #clip = img[img<limit]
+            #mean = clip.mean()
+            #scale = clip.scale()
+            mean, scale = bkg_estimate(img)
+            img -= mean
+            img /= scale
 
         return img, mask, ignore
 
