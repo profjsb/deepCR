@@ -176,8 +176,7 @@ class train:
         """
         if self.verbose:
             print('Begin first {} epochs of training'.format(self.n_epochs_phase0))
-            print('Use batch statistics for batch normalization; keep running statistics to be used in phase1'
-                  'these epochs')
+            print('Use batch statistics for batch normalization; keep running statistics to be used in phase1')
             print('')
         self.train_phase0(self.n_epochs_phase0)
 
