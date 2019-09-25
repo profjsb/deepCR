@@ -48,7 +48,7 @@ class DatasetSim(Dataset):
         self.cr = cr[slice_cr]
         self.sky = sky[slice]
         self.aug_sky = aug_sky
-        self.aug_img = aug_img
+        self.aug_img = (np.log10(aug_img[0]), np.log10(aug_img[1]))
         self.norm = norm
         self.percentile_limit = percentile
 
@@ -84,8 +84,9 @@ class DatasetSim(Dataset):
     def __getitem__(self, i):
         cr, mask = self.get_cr()
         image, ignore = self.get_image(i)
-        f_bkg_aug = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0]))
-        f_img_aug = (self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0]))
+        f_bkg_aug = self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0])
+        f_img_aug = self.aug_img[0] + np.random.rand() * (self.aug_img[1] - self.aug_img[0])
+        f_img_aug = 10**f_img_aug
         bkg = f_bkg_aug * self.sky[i]
         img = (image + bkg) * f_img_aug + cr
         scale = img.copy()
