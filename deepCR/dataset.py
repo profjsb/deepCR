@@ -101,9 +101,9 @@ class DatasetSim(Dataset):
         if self.norm:
             limit = np.percentile(img, self.percentile_limit)
             clip = img[img < limit]
-            mean = clip.mean()
             scale = clip.std()
-            img -= mean
+            median = np.percentile(clip, 50)
+            img -= median
             img /= scale
 
         return img, mask, ignore

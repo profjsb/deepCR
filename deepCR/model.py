@@ -108,9 +108,9 @@ class deepCR():
         if self.norm:
             limit = np.percentile(img0, self.percentile)
             clip = img0[img0 < limit]
-            mean = clip.mean()
+            median = np.percentile(clip, 50)
             scale = clip.std()
-            img0 -= mean
+            img0 -= median
             img0 /= scale
 
         if not segment and not parallel:
