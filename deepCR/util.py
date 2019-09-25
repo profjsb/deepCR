@@ -41,6 +41,7 @@ def maskMetric(PD, GT):
     return np.array([TP, TN, FP, FN])
 
 
+# Not used for now
 def bkg_estimate(img):
     std = img.std()
     mean = img.mean()

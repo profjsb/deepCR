@@ -27,7 +27,7 @@ def test_deepCR_parallel():
     # Make sure we have a lot of cores
     # otherwise this can fail on Travis b/c we only get 1-2 at test time.
     if os.cpu_count() > 2:
-        in_im = np.ones((3096, 2000))
+        in_im = np.ones((1024, 1024))
         t0 = time.time()
         out = mdl.clean(in_im, inpaint=False, parallel=True)
         par_runtime = time.time() - t0

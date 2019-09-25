@@ -21,7 +21,7 @@ __all__ = ['deepCR']
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32, norm=False, percentile=50):
 
         """
             Instantiation of deepCR with specified model configurations
@@ -80,6 +80,9 @@ class deepCR():
         else:
             self.inpaintNet = None
 
+        self.norm = norm
+        self.percentile = percentile
+
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
         """
@@ -101,6 +104,14 @@ class deepCR():
 
         # data pre-processing
         img0.astype(np.float32) / self.scale
+
+        if self.norm:
+            limit = np.percentile(img0, self.percentile)
+            clip = img0[img0 < limit]
+            mean = clip.mean()
+            scale = clip.scale()
+            img0 -= mean
+            img0 /= scale
 
         if not segment and not parallel:
             return self.clean_(img0, threshold=threshold,

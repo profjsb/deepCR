@@ -34,9 +34,10 @@ class VoidLRScheduler:
 class train:
 
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, saturation=1e5,
-                 n_mask_train=1,n_mask_val=1, name='model', hidden=32, epoch=50, epoch_phase0=None, batch_size=16, lr=0.005,
-                 auto_lr_decay=True, lr_decay_patience=4, lr_decay_factor=0.1, save_after=1e5, plot_every=10,
-                 verbose=True, use_tqdm=False, use_tqdm_notebook=False, directory='./'):
+                 n_mask_train=1, n_mask_val=1, norm=False, percentile=50, name='model', hidden=32, epoch=50,
+                 epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4,
+                 lr_decay_factor=0.1, save_after=1e5, plot_every=10, verbose=True, use_tqdm=False,
+                 use_tqdm_notebook=False, directory='./'):
 
         """ This is the class for training deepCR-mask.
         :param image: np.ndarray (N*W*W) training data: image array with CR.
@@ -84,9 +85,9 @@ class train:
             data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
         elif type(image[0]) == str:
             data_train = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, saturation=saturation,
-                                    part='train', noise=noise, n_mask=n_mask_train)
+                                    norm=norm, percentile=percentile, part='train', noise=noise, n_mask=n_mask_train)
             data_val = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, saturation=saturation,
-                                  part='val', noise=noise, n_mask=n_mask_val)
+                                  norm=norm, percentile=percentile, part='val', noise=noise, n_mask=n_mask_val)
         else:
             raise TypeError('Input must be numpy data arrays or list of file paths!')
 
