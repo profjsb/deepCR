@@ -40,15 +40,3 @@ def maskMetric(PD, GT):
         FN += (PD[i][GT[i] == 1] == 0).sum()
     return np.array([TP, TN, FP, FN])
 
-
-# Not used for now
-def bkg_estimate(img):
-    std = img.std()
-    mean = img.mean()
-    while np.all(img > (mean-std*4)) and np.all(img < (mean+std*4)):
-        img = img[(img>(mean-std*3)) * (img<(img-std*3))]
-        sig = img.std()
-        mean = img.mean()
-    return mean, sig
-
-    # implement this: https://www.gnu.org/software/gnuastro/manual/html_node/Sigma-clipping.html

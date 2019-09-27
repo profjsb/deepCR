@@ -89,4 +89,3 @@ if __name__ == '__main__':
     test_eval()
     test_eval_gen()
     test_eval_gen_lacosmic()
-    
