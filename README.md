@@ -5,26 +5,30 @@
 
 Identify and remove cosmic rays from astronomical images using trained convolutional neural networks.
 
-Documentation and tutorials: https://deepcr.readthedocs.io/
-
-This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), ApJ accepted.
-If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500 and consider including a
+This package is implements the method described in the paper:
+  > [deepCR: Cosmic Ray Rejection with Deep Learning](https://arxiv.org/abs/1907.09500)\
+  > Keming Zhang & Joshua Bloom\
+  > _arXiv:1907.09500; ApJ in press_
+  
+If you use this package, please cite the paper above and consider including a
 link to this repository.
 
-Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
+[Documentation and tutorials](deepcr.readthedocs.io)
 
+[Currently available models](https://deepcr.readthedocs.io/en/latest/model_zoo.html)
 
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
 ### New for v0.2.0
 
-DECam deepCR model now available!
+[DECam](https://deepcr.readthedocs.io/en/latest/model_zoo.html#decam) deepCR model now available!
 ```python
 from deepCR import deepCR
 decam_model = deepCR(mask='decam', device='CPU')
 acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
 ```
+Note: Inpainting model is TBA for DECam.
 
 ### Installation
 
@@ -89,10 +93,6 @@ mask, cleaned_image = mdl.clean(image, threshold = 0.5, parallel = True, n_jobs=
 **n_jobs=-1** makes use of all your CPU cores.
 
 Note that this won't speed things up if you're using GPU!
-
-### Currently available models
-
-
 
 ### Contributing
 

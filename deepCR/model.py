@@ -21,7 +21,7 @@ __all__ = ['deepCR']
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32, norm=False, percentile=50):
+    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
 
         """
             Instantiation of deepCR with specified model configurations
@@ -42,7 +42,8 @@ class deepCR():
         None
             """
         if device == 'GPU':
-            assert torch.cuda.is_available()
+            if not torch.cuda.is_available():
+                raise AssertionError('No CUDA device detected!')
             self.dtype = torch.cuda.FloatTensor
             self.dint = torch.cuda.ByteTensor
             wrapper = nn.DataParallel
@@ -80,8 +81,9 @@ class deepCR():
         else:
             self.inpaintNet = None
 
-        self.norm = norm
-        self.percentile = percentile
+        # Unused features to be implemented in a future version
+        self.norm = False
+        self.percentile = None
         self.median = None
         self.std = None
 
