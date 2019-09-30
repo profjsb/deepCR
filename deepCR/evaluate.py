@@ -7,7 +7,7 @@ from skimage.morphology import disk, dilation
 import astroscrappy.astroscrappy as lac
 
 
-__all__ = ['roc']
+__all__ = ['roc', 'roc_lacosmic']
 
 
 def _roc_lacosmic(data, sigclip, objlim=2, dilate=None, gain=1):
