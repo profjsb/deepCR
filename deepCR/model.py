@@ -107,6 +107,9 @@ class deepCR():
         """
 
         # data pre-processing
+
+        inpaint = inpaint and binary
+
         img0 = img0.astype(np.float32) / self.scale
         img0 = img0.copy()
         if self.norm:
