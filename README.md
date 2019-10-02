@@ -45,7 +45,7 @@ Or you can install from source:
 ```bash
 git clone https://github.com/profjsb/deepCR.git
 cd deepCR/
-python setup.py install
+pip install .
 ```
 
 ### Quick Start

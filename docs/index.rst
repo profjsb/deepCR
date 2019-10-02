@@ -36,7 +36,7 @@ Or you can install from source:
 
    git clone https://github.com/profjsb/deepCR.git
    cd deepCR/
-   python setup.py install
+   pip install .
 
 Currently available models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
