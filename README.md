@@ -5,18 +5,34 @@
 
 Identify and remove cosmic rays from astronomical images using trained convolutional neural networks.
 
-Documentation and tutorials: https://deepcr.readthedocs.io/
-
-This is the installable package which implements the methods described in the paper: Zhang & Bloom (2019), submitted.
-
-Code to reproduce benchmarking results in the paper is at: https://github.com/kmzzhang/deepCR-paper
-
-If you use this package, please cite Zhang & Bloom (2019): https://arxiv.org/abs/1907.09500 and consider including a
+This package is implements the method described in the paper:
+  > [deepCR: Cosmic Ray Rejection with Deep Learning](https://arxiv.org/abs/1907.09500)\
+  > Keming Zhang & Joshua Bloom\
+  > _arXiv:1907.09500; ApJ in press_
+  
+If you use this package, please cite the paper above and consider including a
 link to this repository.
 
-Note: the current release includes only model for HST ACS/WFC.
+[Documentation and tutorials](deepcr.readthedocs.io)
+
+[Currently available models](https://deepcr.readthedocs.io/en/latest/model_zoo.html)
+
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
+
+### New for v0.2.0
+
+[DECam](https://deepcr.readthedocs.io/en/latest/model_zoo.html#decam) deepCR model now available!
+
+```python
+from deepCR import deepCR
+decam_model = deepCR(mask='decam', device='CPU')
+```
+Note 1: Model is trained on g-band images but is expected to work on 
+other filters as well. We are working on benchmarking on different filters 
+but before that's done please proceed with caution working with other filters.
+
+Note 1: Inpainting model is TBA for DECam.
 
 ### Installation
 
@@ -29,7 +45,7 @@ Or you can install from source:
 ```bash
 git clone https://github.com/profjsb/deepCR.git
 cd deepCR/
-python setup.py install
+pip install .
 ```
 
 ### Quick Start
@@ -81,30 +97,6 @@ mask, cleaned_image = mdl.clean(image, threshold = 0.5, parallel = True, n_jobs=
 **n_jobs=-1** makes use of all your CPU cores.
 
 Note that this won't speed things up if you're using GPU!
-
-### Currently available models
-
-mask:
-
-    ACS-WFC-F606W-2-4
-
-    ACS-WFC-F606W-2-32(*)
-
-inpaint:
-
-    ACS-WFC-F606W-2-32(*)
-
-    ACS-WFC-F606W-3-32
-
-Recommended models are marked in (*). Larger number indicate larger capacity.
-
-Input images should come from *_flc.fits* files which are in units of electrons.
-
-### Limitations and Caveats
-
-The currently included models are trained and benchmarked on HST ACS/WFC images in the F606W filter.
-
-Visual inspection shows that these models also work well on filters from F435W to F814W. However, users should use a higher threshold (e.g. 0.9) for short wavelength filters to minimize false detections, if any.
 
 ### Contributing
 

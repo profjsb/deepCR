@@ -11,8 +11,8 @@ See https://github.com/profjsb/deepCR
 """
 from deepCR.model import deepCR
 from deepCR.training import train
-from deepCR.evaluate import roc
+from deepCR.evaluate import roc, roc_lacosmic
 
-__all__ = ["deepCR", "train", "roc"]
+__all__ = ["deepCR", "train", "roc", 'roc_lacosmic']
 
-__version__ = '0.1.5'
+__version__ = '0.2.0'

@@ -39,3 +39,4 @@ def maskMetric(PD, GT):
         FP += (PD[i][GT[i] == 0] == 1).sum()
         FN += (PD[i][GT[i] == 1] == 0).sum()
     return np.array([TP, TN, FP, FN])
+

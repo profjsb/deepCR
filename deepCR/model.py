@@ -42,6 +42,8 @@ class deepCR():
         None
             """
         if device == 'GPU':
+            if not torch.cuda.is_available():
+                raise AssertionError('No CUDA device detected!')
             self.dtype = torch.cuda.FloatTensor
             self.dint = torch.cuda.ByteTensor
             wrapper = nn.DataParallel
@@ -79,6 +81,12 @@ class deepCR():
         else:
             self.inpaintNet = None
 
+        # Unused features to be implemented in a future version
+        self.norm = False
+        self.percentile = None
+        self.median = None
+        self.std = None
+
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
               patch=256, parallel=False, n_jobs=-1):
         """
@@ -99,7 +107,19 @@ class deepCR():
         """
 
         # data pre-processing
+
+        inpaint = inpaint and binary
+
         img0 = img0.astype(np.float32) / self.scale
+        img0 = img0.copy()
+        if self.norm:
+            limit = np.percentile(img0, self.percentile)
+            clip = img0[img0 < limit]
+            self.median = np.percentile(clip, 50)
+            self.std = clip.std()
+            img0 -= self.median
+            img0 /= self.std
+
 
         if not segment and not parallel:
             return self.clean_(img0, threshold=threshold,
@@ -158,10 +178,18 @@ class deepCR():
                 img1 = medmask(img0, binary_mask)
                 inpainted = img1 * binary_mask + img0 * (1 - binary_mask)
             if binary:
-                return binary_mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:] * 100
+                inpainted = inpainted[pad_x:, pad_y:]
+                if self.norm:
+                    inpainted *= self.std
+                    inpainted += self.median
+                return binary_mask[pad_x:, pad_y:], inpainted * self.scale
             else:
                 mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return mask[pad_x:, pad_y:], inpainted[pad_x:, pad_y:] * 100
+                inpainted = inpainted[pad_x:, pad_y:]
+                if self.norm:
+                    inpainted *= self.std
+                    inpainted += self.median
+                return mask[pad_x:, pad_y:], inpainted * self.scale
 
         else:
             if binary:
@@ -284,7 +312,7 @@ class deepCR():
         :param mask: (np.ndarray) inpainting mask
         :return: inpainted clean image
         """
-        img0 = img0.astype(np.float32) / 100
+        img0 = img0.astype(np.float32) / self.scale
         mask = mask.astype(np.float32)
         shape = img0.shape[-2:]
         if self.inpaintNet is not None:
@@ -301,5 +329,5 @@ class deepCR():
         else:
             img1 = medmask(img0, mask)
             inpainted = img1 * mask + img0 * (1 - mask)
-        return inpainted * 100
+        return inpainted * self.scale
 
