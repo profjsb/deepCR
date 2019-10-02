@@ -23,12 +23,16 @@ link to this repository.
 ### New for v0.2.0
 
 [DECam](https://deepcr.readthedocs.io/en/latest/model_zoo.html#decam) deepCR model now available!
+
 ```python
 from deepCR import deepCR
 decam_model = deepCR(mask='decam', device='CPU')
-acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
 ```
-Note: Inpainting model is TBA for DECam.
+Note 1: Model is trained on g-band images but is expected to work on 
+other filters as well. We are working on benchmarking on different filters 
+but before that's done please proceed with caution working with other filters.
+
+Note 1: Inpainting model is TBA for DECam.
 
 ### Installation
 

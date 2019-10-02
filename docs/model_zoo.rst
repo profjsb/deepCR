@@ -36,6 +36,10 @@ Input images should come from calibrated images in the original unit (adu).
 The ROC curves above are produced from a test set that contains noise in cosmic ray labels.
 This causes TPR to be lower than actual because the deepCR predicted CR labels is essentially noise-free.
 
+Model is trained on g-band images but is expected to work on
+other filters as well. We are working on benchmarking on different filters
+but before that's done please proceed with caution working with other filters.
+
 For extremely short or long exposures (t_exp < 10s or t_exp > 1800s), please visually verify mask output.
 
 Generic Ground Imaging
