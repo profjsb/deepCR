@@ -13,7 +13,7 @@ This package is implements the method described in the paper:
 If you use this package, please cite the paper above and consider including a
 link to this repository.
 
-[Documentation and tutorials](deepcr.readthedocs.io)
+[Documentation and tutorials](https://deepcr.readthedocs.io)
 
 [Currently available models](https://deepcr.readthedocs.io/en/latest/model_zoo.html)
 
@@ -32,7 +32,7 @@ Note 1: Model is trained on g-band images but is expected to work on
 other filters as well. We are working on benchmarking on different filters 
 but before that's done please proceed with caution working with other filters.
 
-Note 1: Inpainting model is TBA for DECam.
+Note 2: Inpainting model is TBA for DECam.
 
 ### Installation
 
