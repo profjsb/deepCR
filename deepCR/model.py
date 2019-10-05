@@ -3,6 +3,7 @@
 from os import path, mkdir
 import math
 import shutil
+import secrets
 
 import numpy as np
 import torch
@@ -211,11 +212,12 @@ class deepCR():
           larger n_jobs.
         :return: CR mask and (optionally) clean inpainted image
         """
-        folder = './joblib_memmap'
+        folder = './joblib_memmap_' + secrets.token_hex(3)
         try:
             mkdir(folder)
         except FileExistsError:
-            pass
+            folder = './joblib_memmap_' + secrets.token_hex(3)
+            mkdir(folder)
 
         im_shape = img0.shape
         img0_dtype = img0.dtype
