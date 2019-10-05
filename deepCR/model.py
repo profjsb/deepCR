@@ -88,7 +88,7 @@ class deepCR():
         self.std = None
 
     def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
-              patch=256, parallel=False, n_jobs=-1):
+              patch=256, n_jobs=1):
         """
             Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
         :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from
@@ -100,9 +100,7 @@ class deepCR():
           Used for memory control.
         :param patch: (int) Use 256 unless otherwise required. if segment==True, segment image into chunks of
           patch * patch.
-        :param parallel: (bool) run in parallel if True and segment==True
-        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` Beware of memory overflow for
-          larger n_jobs.
+        :param n_jobs: (int) number of jobs to run in parallel, passed to `joblib.` default: 1.
         :return: CR mask and (optionally) clean inpainted image
         """
 
@@ -120,12 +118,11 @@ class deepCR():
             img0 -= self.median
             img0 /= self.std
 
-
-        if not segment and not parallel:
+        if not segment and n_jobs == 1:
             return self.clean_(img0, threshold=threshold,
                                inpaint=inpaint, binary=binary)
         else:
-            if not parallel:
+            if n_jobs == 1:
                 return self.clean_large(img0, threshold=threshold,
                                inpaint=inpaint, binary=binary, patch=patch)
             else:

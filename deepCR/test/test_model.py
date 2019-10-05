@@ -20,7 +20,7 @@ def test_deepCR_parallel():
 
     mdl = deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
     in_im = np.ones((299, 299))
-    out = mdl.clean(in_im, parallel=True)
+    out = mdl.clean(in_im, n_jobs=-1)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
 
     # Is the serial runtime slower than the parallel runtime on a big image?
@@ -29,12 +29,12 @@ def test_deepCR_parallel():
     if os.cpu_count() > 2:
         in_im = np.ones((1024, 1024))
         t0 = time.time()
-        out = mdl.clean(in_im, inpaint=False, parallel=True)
+        out = mdl.clean(in_im, inpaint=False, n_jobs=-1)
         par_runtime = time.time() - t0
         assert out.shape == in_im.shape
 
         t0 = time.time()
-        out = mdl.clean(in_im, inpaint=False, parallel=False)
+        out = mdl.clean(in_im, inpaint=False)
         ser_runtime = time.time() - t0
         assert par_runtime < ser_runtime
 
