@@ -144,9 +144,9 @@ class dataset(Dataset):
             ignore = np.zeros_like(image)
 
         if part == 'train':
-            s = np.s_[:int(len * f_train)]
+            s = np.s_[:max(1, int(len * f_train))]
         elif part == 'val':
-            s = np.s_[int(len * f_train):]
+            s = np.s_[min(len - 1, int(len * f_train)):]
         else:
             s = np.s_[0:]
 
