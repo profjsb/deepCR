@@ -1,6 +1,7 @@
 """ module for training new deepCR-mask models
 """
 import numpy as np
+import math
 import datetime
 import matplotlib.pyplot as plt
 from tqdm import tqdm as tqdm
@@ -12,6 +13,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.tensorboard import SummaryWriter
 
 from deepCR.util import maskMetric
 from deepCR.dataset import dataset, DatasetSim
@@ -107,6 +109,9 @@ class train:
             self.network = WrappedModel(UNet2Sigmoid(1,1,hidden))
             self.network.type(self.dtype)
 
+        # initialize model weights
+        self.apply(self.weights_init('xavier'))
+
         self.optimizer = optim.Adam(self.network.parameters(), lr=lr)
         if auto_lr_decay:
             self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=lr_decay_factor, patience=lr_decay_patience,
@@ -135,6 +140,9 @@ class train:
             self.tqdm = tqdm
         self.disable_tqdm = not (use_tqdm_notebook or use_tqdm)
 
+        # tensorboard to record and visualize training log (require pytorch 1.1 and up)
+        self.writer = SummaryWriter(log_dir=directory)
+
     def set_input(self, img0, mask, ignore):
         """
         :param img0: input image
@@ -146,7 +154,7 @@ class train:
         self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
 
-    def validate_mask(self):
+    def validate_mask(self, epoch=None):
         """
         :return: validation loss. print TPR and FPR at threshold = 0.5.
         """
@@ -168,6 +176,11 @@ class train:
         FPR = FP / (FP + TN)
         if self.verbose:
             print('[TPR=%.3f, FPR=%.3f] @threshold = 0.5' % (TPR, FPR))
+        if epoch:
+            self.writer.add_scalar('TPR', TPR, epoch)
+            self.writer.add_scalar('FPR', FPR, epoch)
+            self.writer.add_scalar('validate_loss', lmask, epoch)
+
         return (lmask)
 
     def train(self):
@@ -202,7 +215,7 @@ class train:
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % self.epoch_mask)
-            val_loss = self.validate_mask()
+            val_loss = self.validate_mask(epoch)
             self.validation_loss.append(val_loss)
             if self.verbose:
                 print('loss = %.4f' % (self.validation_loss[-1]))
@@ -228,7 +241,7 @@ class train:
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % self.epoch_mask)
-            valLossMask = self.validate_mask()
+            valLossMask = self.validate_mask(epoch)
             self.validation_loss.append(valLossMask)
             if self.verbose:
                 print('loss = %.4f' % (self.validation_loss[-1]))
@@ -298,3 +311,26 @@ class train:
         self.network.load_state_dict(torch.load(self.directory + filename + '.pth'))
         loc = filename.find('epoch') + 5
         self.epoch_mask = int(filename[loc:])
+
+    # code from CycleGAN
+    def weights_init(self, init_type='gaussian'):
+        def init_fun(m):
+            classname = m.__class__.__name__
+            if (classname.find('Conv') == 0 or classname.find(
+                    'Linear') == 0) and hasattr(m, 'weight'):
+                # print m.__class__.__name__
+                if init_type == 'gaussian':
+                    nn.init.normal_(m.weight.data, 0.0, 0.02)
+                elif init_type == 'xavier':
+                    nn.init.xavier_normal_(m.weight.data, gain=math.sqrt(2))
+                elif init_type == 'kaiming':
+                    nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+                elif init_type == 'orthogonal':
+                    nn.init.orthogonal_(m.weight.data, gain=math.sqrt(2))
+                elif init_type == 'default':
+                    pass
+                else:
+                    assert 0, "Unsupported initialization: {}".format(init_type)
+                if hasattr(m, 'bias') and m.bias is not None:
+                    nn.init.constant_(m.bias.data, 0.0)
+        return init_fun
