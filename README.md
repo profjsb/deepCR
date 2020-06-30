@@ -6,9 +6,10 @@
 Identify and remove cosmic rays from astronomical images using trained convolutional neural networks.
 
 This package is implements the method described in the paper:
-  > [deepCR: Cosmic Ray Rejection with Deep Learning](https://arxiv.org/abs/1907.09500)\
-  > Keming Zhang & Joshua Bloom\
-  > _arXiv:1907.09500; ApJ in press_
+  > **deepCR: Cosmic Ray Rejection with Deep Learning**\
+  > Keming Zhang & Joshua Bloom 2020\
+  > _[Published in the Astrophysical Journal](https://iopscience.iop.org/article/10.3847/1538-4357/ab3fa6)\
+  [arXiv:1907.09500](https://arxiv.org/abs/1907.09500)_
   
 If you use this package, please cite the paper above and consider including a
 link to this repository.
@@ -20,19 +21,6 @@ link to this repository.
 
 <img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
-### New for v0.2.0
-
-[DECam](https://deepcr.readthedocs.io/en/latest/model_zoo.html#decam) deepCR model now available!
-
-```python
-from deepCR import deepCR
-decam_model = deepCR(mask='decam', device='CPU')
-```
-Note 1: Model is trained on g-band images and is tested to work well on g and r bands. 
-It should work on other filters as well. We are working on benchmarking on different filters 
-but before that's done please proceed with caution working with other filters.
-
-Note 2: Inpainting model is TBA for DECam.
 
 ### Installation
 

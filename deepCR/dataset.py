@@ -42,7 +42,7 @@ class DatasetSim(Dataset):
             s_cr = np.s_[:int(self.len_mask * f_train)]
         elif part == 'val':
             s = np.s_[int(self.len_image * f_train):]
-            s_cr = np.s_[:int(self.len_mask * f_train)]
+            s_cr = np.s_[int(self.len_mask * f_train):]
         else:
             s = np.s_[0:]
             s_cr = np.s_[0:]

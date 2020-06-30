@@ -1,11 +1,16 @@
 Quickstart: Training new deepCR models
 ==============
 
+Dataset construction
+^^^^^^^^^^^^^^^^^^^^
+
+
 Training new models
 ^^^^^^^^^^^^^^^^^^^
 
-deepCR provides easy-to-use training functionality. Assume you have constructed your dataset which includes the
-following ``numpy`` arrays:
+deepCR provides easy-to-use training functionality. Assume you have constructed your dataset in one of the two formats:
+
+**Type 1: store entire dataset in several numpy arrays**
 
 image: np.ndarray (N,W,W). Array containing N input images chucks of W*W
 
@@ -15,6 +20,13 @@ ignore: (optional) np.ndarray (N,W,W). Array containing flags where we do not wa
 typically includes bad pixels and saturations, or any other artifact falsely included in ``mask``
 
 sky: (optional) np.ndarray (N,) Array containing sky background level for each image chunks.
+
+**Type 2: store each image/mask individually**
+
+image: list. List containing complete paths to input images stored in *.npy of shape (W, W)
+
+mask: list. List containing complete paths to cosmic rays stored in *.npy of shape (2, W, W). mask[0] is cr image
+and mask[1] is cr mask.
 
 .. code-block:: python
 

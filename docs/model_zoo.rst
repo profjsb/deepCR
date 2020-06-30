@@ -35,6 +35,9 @@ DECam is a high-performance, wide-field CCD imager mounted at the prime focus of
 The ROC curves above are produced from a test set that contains noise in cosmic ray labels.
 This causes TPR to be lower than actual because the deepCR predicted CR labels is essentially noise-free.
 
+**Note 0**: The current DECam model as preliminary as it is trained on median-coadd science images which
+may cause false positives of stars in single frame images in some cases.
+
 Note 1: Output will include some bad pixels and columns, and sometimes blooming patterns.
 In particular, the blooming artifacts in the CR mask might be 1-2 pixels larger than the
 actual blooming size and cannot be excluded by subtracting by a saturation mask.
