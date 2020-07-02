@@ -12,6 +12,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.tensorboard import SummaryWriter
 
 from deepCR.util import maskMetric
 from deepCR.dataset import dataset, DatasetSim
@@ -135,6 +136,9 @@ class train:
             self.tqdm = tqdm
         self.disable_tqdm = not (use_tqdm_notebook or use_tqdm)
 
+        # tensorboard to record and visualize training log (require pytorch 1.1 and up)
+        self.writer = SummaryWriter(log_dir=directory)
+
     def set_input(self, img0, mask, ignore):
         """
         :param img0: input image
@@ -146,7 +150,7 @@ class train:
         self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
 
-    def validate_mask(self):
+    def validate_mask(self, epoch=None):
         """
         :return: validation loss. print TPR and FPR at threshold = 0.5.
         """
@@ -168,6 +172,11 @@ class train:
         FPR = FP / (FP + TN)
         if self.verbose:
             print('[TPR=%.3f, FPR=%.3f] @threshold = 0.5' % (TPR, FPR))
+        if epoch:
+            self.writer.add_scalar('TPR', TPR, epoch)
+            self.writer.add_scalar('FPR', FPR, epoch)
+            self.writer.add_scalar('validate_loss', lmask, epoch)
+
         return (lmask)
 
     def train(self):
@@ -202,7 +211,7 @@ class train:
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % self.epoch_mask)
-            val_loss = self.validate_mask()
+            val_loss = self.validate_mask(epoch)
             self.validation_loss.append(val_loss)
             if self.verbose:
                 print('loss = %.4f' % (self.validation_loss[-1]))
@@ -228,7 +237,7 @@ class train:
 
             if self.verbose:
                 print('----------- epoch = %d -----------' % self.epoch_mask)
-            valLossMask = self.validate_mask()
+            valLossMask = self.validate_mask(epoch)
             self.validation_loss.append(valLossMask)
             if self.verbose:
                 print('loss = %.4f' % (self.validation_loss[-1]))
