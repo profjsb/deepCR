@@ -121,9 +121,10 @@ class DatasetSim(Dataset):
 class dataset(Dataset):
     def __init__(self, image, mask, ignore=None, sky=None, aug_sky=[0, 0], part=None, f_val=0.1, seed=1):
         """ custom pytorch dataset class to load deepCR-mask training data
-        :param image: image with CR
-        :param mask: CR mask
-        :param ignore: loss mask, e.g., bad pixel, saturation, etc.
+        :param image: image with CR. Could be (N, W, H) array or list of path to single (W, H) images.
+        :param mask: CR mask. Could be (N, W, H) array or list of path to single (W, H) images.
+        :param ignore: (optional) loss mask, e.g., bad pixel, saturation, etc. Could be (N, W, H) array or list
+        of path to single (W, H) images
         :param sky: (np.ndarray) [N,] sky background level
         :param aug_sky: [float, float]. If sky is provided, use random sky background in the range
           [aug_sky[0] * sky, aug_sky[1] * sky]. This serves as a regularizers to allow the trained model to adapt to a
@@ -162,4 +163,8 @@ class dataset(Dataset):
 
     def __getitem__(self, i):
         a = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0])) * self.sky[i]
-        return self.image[i] + a, self.mask[i], self.ignore[i]
+        ignore = self.ignore[i] if type(self.ignore[i]) != str else np.load(self.ignore[i])
+        if type(self.image[i] == str):
+            return np.load(self.image[i]) + a, np.load(self.mask[i]), ignore
+        else:
+            return self.image[i] + a, self.mask[i], ignore
