@@ -15,7 +15,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 
 from deepCR.util import maskMetric
-from deepCR.dataset import dataset, DatasetSim
+from deepCR.dataset import dataset, DatasetSim, PairedDatasetImagePath
 from deepCR.unet import WrappedModel, UNet2Sigmoid
 
 __all__ = 'train'
@@ -34,16 +34,16 @@ class VoidLRScheduler:
 
 class train:
 
-    def __init__(self, image, mask, ignore=None, sky=None, aug_sky=(0, 0), aug_img=(1, 1), noise=False, saturation=1e5,
+    def __init__(self, image, mask=None, ignore=None, sky=None, mode='pair', aug_sky=(0, 0), aug_img=(1, 1), noise=False, saturation=1e5,
                  n_mask_train=1, n_mask_val=1, norm=False, percentile_limit=50, name='model', hidden=32, epoch=50,
                  epoch_phase0=None, batch_size=16, lr=0.005, auto_lr_decay=True, lr_decay_patience=4,
                  lr_decay_factor=0.1, save_after=1e5, plot_every=10, verbose=True, use_tqdm=False,
                  use_tqdm_notebook=False, directory='./'):
 
         """ This is the class for training deepCR-mask.
-        :param image: np.ndarray (N*W*W) training data: image array with CR.
-        :param mask: np.ndarray (N*W*W) training data: CR mask array
-        :param ignore: training data: Mask for taking loss. e.g., bad pixel, saturation, etc.
+        :param image: np.ndarray (N*W*W) training data: image array with CR or list of single image paths.
+        :param mask: np.ndarray (N*W*W) training data: CR mask array or list of single image paths.
+        :param ignore: training data: Mask for taking loss. e.g., bad pixel, saturation, etc. or list of single image paths.
         :param sky: np.ndarray (N,) (optional) sky background
         :param aug_sky: [float, float]. If sky is provided, use random sky background in the range
           [aug_sky[0] * sky, aug_sky[1] * sky]. This serves as a regularizers to allow the trained model to adapt to a
@@ -79,18 +79,20 @@ class train:
             raise AttributeError('Var (sky) is required for sky background augmentation!')
         if ignore is None:
             ignore = np.zeros_like(image)
-        if type(image) == np.ndarray and len(image.shape) == 3:
-            assert image.shape == mask.shape == ignore.shape
-            assert image.shape[1] == image.shape[2]
-            data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
-            data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
-        elif type(image[0]) == str:
+        if mode == 'pair':
+            if type(image[0]) == 'str':
+                data_train = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='train')
+                data_val = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='val')
+            else:
+                data_train = dataset(image, mask, ignore, sky, part='train', aug_sky=aug_sky)
+                data_val = dataset(image, mask, ignore, sky, part='val', aug_sky=aug_sky)
+        elif mode == 'simulate':
             data_train = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, saturation=saturation,
                                     norm=norm, percentile_limit=percentile_limit, part='train', noise=noise, n_mask=n_mask_train)
             data_val = DatasetSim(image, mask, sky, aug_sky=aug_sky, aug_img=aug_img, saturation=saturation,
                                   norm=norm, percentile_limit=percentile_limit, part='val', noise=noise, n_mask=n_mask_val)
         else:
-            raise TypeError('Input must be numpy data arrays or list of file paths!')
+            raise TypeError('Mode must be one of pair or simulate!')
 
         self.TrainLoader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
         self.ValLoader = DataLoader(data_val, batch_size=batch_size, shuffle=False, num_workers=8)
@@ -112,7 +114,6 @@ class train:
         if auto_lr_decay:
             self.lr_scheduler = ReduceLROnPlateau(self.optimizer, factor=lr_decay_factor, patience=lr_decay_patience,
                                                   cooldown=2, verbose=True, threshold=0.005)
-
         else:
             self.lr_scheduler = VoidLRScheduler()
         self.lr = lr
