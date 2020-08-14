@@ -41,10 +41,13 @@ class train:
                  use_tqdm_notebook=False, directory='./'):
 
         """ This is the class for training deepCR-mask.
-        :param image: np.ndarray (N*W*W) training data: image array with CR or list of single image paths.
-        :param mask: np.ndarray (N*W*W) training data: CR mask array or list of single image paths.
-        :param ignore: training data: Mask for taking loss. e.g., bad pixel, saturation, etc. or list of single image paths.
-        :param sky: np.ndarray (N,) (optional) sky background
+        :param image: np.ndarray (N*W*W) of CR affected images or list of npy arrays of shape (2or3,W,W), where
+        the 1st dim is CR affect image, 2nd dim is CR mask, (optional) 3rd dimension is ignore mask.
+        See documentation: training tutorial.
+        :param mask: np.ndarray (N*W*W) training data: CR mask array.
+        :param ignore: training data: Mask for taking loss. e.g., bad pixel, saturation, etc.
+        :param sky: np.ndarray (N,) (optional) sky background. When param: iamge is list to npy files, provide sky level
+        as sky.npy in each image subdirectory (see documentation: training tutorial).
         :param aug_sky: [float, float]. If sky is provided, use random sky background in the range
           [aug_sky[0] * sky, aug_sky[1] * sky]. This serves as a regularizers to allow the trained model to adapt to a
           wider range of sky background or equivalently exposure time. Remedy the fact that exposure time in the
