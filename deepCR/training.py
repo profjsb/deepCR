@@ -83,7 +83,7 @@ class train:
         if ignore is None:
             ignore = np.zeros_like(image)
         if mode == 'pair':
-            if type(image[0]) == 'str':
+            if type(image[0]) == 'str' or type(image[0]) == np.str_:
                 data_train = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='train')
                 data_val = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='val')
             else:
