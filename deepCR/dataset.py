@@ -213,7 +213,7 @@ class PairedDatasetImagePath(Dataset):
         :return: amount of flux to add to image
         """
         path = os.path.split(self.paths[i])[0]
-        sky_path = os.path.join(path, 'sky.npy')
+        sky_path = os.path.join(path, 'sky.npy') #JK
         if os.path.isfile(sky_path):
             f_img = self.paths[i].split('/')[-1]
             sky_idx = int(f_img.split('_')[0])
@@ -230,6 +230,6 @@ class PairedDatasetImagePath(Dataset):
             ignore = data[2]
         else:
             ignore = np.zeros_like(data[0])
-
+        # try:#JK
         skyaug = self.get_skyaug(i)
         return image + skyaug, mask, ignore

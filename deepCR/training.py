@@ -83,7 +83,7 @@ class train:
         if ignore is None:
             ignore = np.zeros_like(image)
         if mode == 'pair':
-            if type(image[0]) == 'str' or type(image[0]) == np.str_:
+            if type(image[0]) == str: #or type(image[0]) == np.str_:
                 data_train = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='train')
                 data_val = PairedDatasetImagePath(image, aug_sky[0], aug_sky[1], part='val')
             else:
@@ -150,9 +150,9 @@ class train:
         :param ignore: loss mask
         :return: None
         """
-        self.img0 = Variable(img0.type(self.dtype)).view(-1, 1, self.shape, self.shape)
-        self.mask = Variable(mask.type(self.dtype)).view(-1, 1, self.shape, self.shape)
-        self.ignore = Variable(ignore.type(self.dtype)).view(-1, 1, self.shape, self.shape)
+        self.img0 = Variable(img0.type(self.dtype)).view(-1,1, self.shape, self.shape)
+        self.mask = Variable(mask.type(self.dtype)).view(-1,1, self.shape, self.shape)
+        self.ignore = 1- (Variable(ignore.type(self.dtype)).view(-1,1, self.shape, self.shape) == 0).type(torch.uint8)
 
     def validate_mask(self, epoch=None):
         """
