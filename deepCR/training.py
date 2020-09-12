@@ -152,7 +152,7 @@ class train:
         """
         self.img0 = Variable(img0.type(self.dtype)).view(-1,1, self.shape, self.shape)
         self.mask = Variable(mask.type(self.dtype)).view(-1,1, self.shape, self.shape)
-        self.ignore = 1- (Variable(ignore.type(self.dtype)).view(-1,1, self.shape, self.shape) == 0).type(torch.uint8)
+        self.ignore = Variable(ignore.type(self.dtype)).view(-1,1, self.shape, self.shape)
 
     def validate_mask(self, epoch=None):
         """
