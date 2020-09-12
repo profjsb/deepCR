@@ -165,7 +165,7 @@ class dataset(Dataset):
     def __getitem__(self, i):
         a = (self.aug_sky[0] + np.random.rand() * (self.aug_sky[1] - self.aug_sky[0])) * self.sky[i]
         ignore = self.ignore[i] if type(self.ignore[i]) != str else np.load(self.ignore[i])
-        if type(self.image[i] == str):
+        if type(self.image[i]) == str:
             return np.load(self.image[i]) + a, np.load(self.mask[i]), ignore
         else:
             return self.image[i] + a, self.mask[i], ignore
@@ -185,11 +185,10 @@ class PairedDatasetImagePath(Dataset):
         :param f_val: percentage of dataset reserved as validation set.
         :param seed: fix numpy random seed to seed, for reproducibility.
         """
-
         assert 0 < f_val < 1
         np.random.seed(seed)
         n_total = len(paths)
-        n_train = int(len * (1 - f_val))
+        n_train = int(n_total * (1 - f_val)) #int(len * (1 - f_val)) JK
 
         if part == 'train':
             s = np.s_[:max(1, n_train)]
@@ -214,9 +213,11 @@ class PairedDatasetImagePath(Dataset):
         :return: amount of flux to add to image
         """
         path = os.path.split(self.paths[i])[0]
-        sky_path = np.load(os.path.join(path, 'sky.npy'))
+        sky_path = os.path.join(path, 'sky.npy') #JK
         if os.path.isfile(sky_path):
-            sky = np.load(sky_path)
+            f_img = self.paths[i].split('/')[-1]
+            sky_idx = int(f_img.split('_')[0])
+            sky = np.load(sky_path)[sky_idx-1]
             return sky * np.random.uniform(self.skyaug_min, self.skyaug_max)
         else:
             return 0
@@ -229,5 +230,6 @@ class PairedDatasetImagePath(Dataset):
             ignore = data[2]
         else:
             ignore = np.zeros_like(data[0])
+        # try:#JK
         skyaug = self.get_skyaug(i)
         return image + skyaug, mask, ignore
