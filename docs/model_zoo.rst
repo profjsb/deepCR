@@ -9,14 +9,15 @@ Hubble ACS/WFC
     model_cpu = deepCR(mask='ACS-WFC-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
     model_gpu = deepCR(mask='ACS-WFC-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
 
-``ACS-WFC-2-32`` model is traind with 45+ image sets from ACS/WFC F435W, F606W, F814W. Individual models for each filter were also trained to demonstrate that the global model can be used for all three filter images. Refer to the ROC curves below.
+``ACS-WFC-2-32`` model is trained with 45+ image sets from ACS/WFC F435W, F606W, F814W. Individual models for each filter were also trained to demonstrate that the global model can be used for all three filter images. Refer to the ROC curves below. The Y-axis denotes the true positive rate (TPR), and X-axis denotes the false positive rate (FPR). 
+
+Since the training and test datasets comprise images from three different fields (extragalactic field, globular cluster, resolved galaxy), the models were tested for each field. As shown, there is no significant discrepancy between individual models' performance and the global model. 
 
 .. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f435w_test.png
 
 .. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f606w_test.png
 
 .. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f814w_test.png
-
 
 
 DECam
