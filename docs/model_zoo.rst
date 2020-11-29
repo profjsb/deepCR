@@ -6,18 +6,17 @@ Hubble ACS/WFC
 .. code-block:: python
 
     from deepCR import deepCR
-    model_cpu = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
-    model_gpu = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+    model_cpu = deepCR(mask='ACS-WFC-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
+    model_gpu = deepCR(mask='ACS-WFC-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
 
-This model is trained on the f606w filter. Visual inspection shows that it also work well on sparser images taken in
-filters from F435W to F814W. However, there may be increased false detections in dense stellar fields for
-filters < f606w.
+``ACS-WFC-2-32`` model is traind with 45+ image sets from ACS/WFC F435W, F606W, F814W. Individual models for each filter were also trained to demonstrate that the global model can be used for all three filter images. Refer to the ROC curves below.
 
-Input images for the ACS/WFC model should come from *_flc.fits* files which are in units of electrons.
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f435w_test.png
 
-We are currently working on a generic HST model that works with most imagers and filters.
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f606w_test.png
 
-.. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/acs_wfc_f606w_roc.png
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f814w_test.png
+
 
 
 DECam
