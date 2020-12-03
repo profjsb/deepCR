@@ -19,6 +19,9 @@ Since the training and test datasets comprise images from three different fields
 
 .. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f814w_test.png
 
+To reproduce these plots, refer to this `page
+<https://github.com/kgb0255/deepCR-ACS-WFC_reproduction>`_.
+
 
 DECam
 ^^^^^
