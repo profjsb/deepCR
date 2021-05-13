@@ -8,7 +8,7 @@ from deepCR.model import deepCR
 
 def test_deepCR_serial():
 
-    mdl = deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
+    mdl = deepCR(mask='ACS-WFC', device='CPU')
     in_im = np.ones((299, 299))
     out = mdl.clean(in_im)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
@@ -18,7 +18,7 @@ def test_deepCR_serial():
 
 def test_deepCR_parallel():
 
-    mdl = deepCR(mask='ACS-WFC-F606W-2-32', device='CPU')
+    mdl = deepCR(mask='ACS-WFC', device='CPU')
     in_im = np.ones((299, 299))
     out = mdl.clean(in_im, n_jobs=-1)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)
@@ -40,7 +40,7 @@ def test_deepCR_parallel():
 
 
 def test_seg():
-    mdl = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
+    mdl = deepCR(mask='ACS-WFC', inpaint='ACS-WFC-F606W-2-32', device='CPU')
     in_im = np.ones((300, 500))
     out = mdl.clean(in_im, segment=True)
     assert (out[0].shape, out[1].shape) == (in_im.shape, in_im.shape)

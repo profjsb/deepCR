@@ -22,7 +22,7 @@ __all__ = ['deepCR']
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
+    def __init__(self, mask='ACS-WFC', inpaint=None, device='CPU', hidden=32):
 
         """
             Instantiation of deepCR with specified model configurations
