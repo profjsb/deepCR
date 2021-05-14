@@ -23,8 +23,8 @@ Identify and remove cosmic rays from astronomical images using trained convoluti
 .. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg
 
 
-Installation
-^^^^^^^^^^^^
+Quickstart
+^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -38,13 +38,20 @@ Or you can install from source:
    cd deepCR/
    pip install .
 
+.. code-block:: python
+
+    from deepCR import deepCR
+    import numpy as np
+    mdl = deepCR(mask="ACS-WFC", device="CPU")
+    image = np.zeros((1024, 1024))
+    binary_mask = mdl.clean(image, segment=True, n_jobs=-1)
+
 Currently available models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. code-block:: python
 
    from deepCR import deepCR
-   decam_model = deepCR(mask='decam', device='CPU')
-   acswfc_model = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+   acswfc_model = deepCR(mask='ACS-WFC', inpaint='ACS-WFC-F606W-2-32')
 ```
 
 For detailed descriptions and requirements of currently available models, please visit the model_zoo page below.
