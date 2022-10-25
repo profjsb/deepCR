@@ -150,6 +150,7 @@ class train:
         :param ignore: loss mask
         :return: None
         """
+        img0 = (img0 - img0.mean())/img0.std()
         self.img0 = Variable(img0.type(self.dtype)).view(-1,1, self.shape, self.shape)
         self.mask = Variable(mask.type(self.dtype)).view(-1,1, self.shape, self.shape)
         self.ignore = Variable(ignore.type(self.dtype)).view(-1,1, self.shape, self.shape)
@@ -255,7 +256,8 @@ class train:
                 print('')
 
     def plot_example(self):
-        plt.figure(figsize=(10, 30))
+        #plt.figure(figsize=(10, 30))
+        plt.figure(figsize=(30,10))
         plt.subplot(131)
         plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
         plt.title('epoch=%d' % self.epoch_mask)
@@ -265,7 +267,10 @@ class train:
         plt.subplot(133)
         plt.imshow(self.mask[0, 0].detach().cpu().numpy(), cmap='gray')
         plt.title('ground truth')
-        plt.show()
+        filename = 'epoch%d' % self.epoch_mask
+        print('Save trainplot')
+        plt.savefig(self.directory+self.name+filename+'trainplot.png')
+        #plt.show()
 
     def set_to_eval(self):
         self.network.eval()
