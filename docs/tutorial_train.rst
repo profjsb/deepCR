@@ -8,9 +8,9 @@ Dataset construction
 Training new models
 ^^^^^^^^^^^^^^^^^^^
 
-deepCR provides easy-to-use training functionality. Assume you have constructed your dataset in one of the two formats:
+deepCR supports two type of training data:
 
-**Type 1: store entire dataset in several numpy arrays**
+**Type 1: Paired data of image -- mask. Stored in one huge npy file (this will be deprecated)**
 
 image: np.ndarray (N,W,W). Array containing N input images chucks of W*W
 
@@ -21,7 +21,35 @@ typically includes bad pixels and saturations, or any other artifact falsely inc
 
 sky: (optional) np.ndarray (N,) Array containing sky background level for each image chunks.
 
-**Type 2: store each image/mask individually**
+.. code-block:: python
+
+    from deepCR import train
+    trainer = train(image, mask, ignore=ignore, sky=sky, aug_sky=[-0.9, 3], name='mymodel', gpu=True, epoch=50,
+    save_after=20, plot_every=10, use_tqdm=False)
+    trainer.train()
+    filename = trainer.save() # not necessary if save_after is specified
+
+
+**Type 2: Paired data of image -- mask. Data passed along as list of paths of single images**
+
+image: List of paths to image segments of shape (2or3,W,W). The three dimensions are image, CR mask, (optional) ignore mask.
+
+To provide the sky background level, save image chunks from the same exposure in the same sub-directory, and include the
+sky background level in sky.npy under that directory, e.g., /data/image0/sky.npy where the image segments are to be saved
+in the same directory.
+
+Remember not to include sky.npy in the list of training images especially when traversing your directory.
+
+.. code-block:: python
+
+    from deepCR import train
+    trainer = train(image, mode='pair', aug_sky=[-0.9, 3], name='mymodel', gpu=True, epoch=50,
+    save_after=20, plot_every=10, use_tqdm=False)
+    trainer.train()
+    filename = trainer.save() # not necessary if save_after is specified
+
+
+**Type 2: Simulate CR affected images from clean images and CR in dark frames**
 
 image: list. List containing complete paths to input images stored in *.npy of shape (W, W)
 
@@ -31,14 +59,14 @@ and mask[1] is cr mask.
 .. code-block:: python
 
     from deepCR import train
-    trainer = train(image, mask, ignore=ignore, sky=sky, aug_sky=[-0.9, 3], name='mymodel', gpu=True, epoch=50,
-                    save_after=20, plot_every=10, use_tqdm=False)
+    trainer = train(image, mask, ignore=ignore, type='simulate', sky=sky, aug_sky=[-0.9, 3], name='mymodel', gpu=True,
+     epoch=50, save_after=20, plot_every=10, use_tqdm=False)
     trainer.train()
     filename = trainer.save() # not necessary if save_after is specified
 
 The aug_sky argument enables data augmentation in sky background; random sky background in the range
-[aug_sky[0] * sky, aug_sky[1] * sky] is used for each input image. Sky array must be provided to use this functionality.
-This serves as a regularizer to allow the trained model to adapt to a wider range of sky background or equivalently
+[aug_sky[0] * sky, aug_sky[1] * sky] is used for each input image. Sky array / sky.npy must be provided to use this functionality.
+This adapts the trained model to a wider range of sky background or equivalently
 exposure times. Remedy for the fact that exposure time in the training set is discrete and limited.
 
 The save_after argument lets the trainer to save models on every epoch after save_after which has the currently lowest

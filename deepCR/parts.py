@@ -1,16 +1,15 @@
 import torch
 import torch.nn as nn
+from torch.nn.utils import weight_norm
 
 
 class double_conv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(type(self), self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch, momentum=0.005),
+            weight_norm(nn.Conv2d(in_ch, out_ch, 3, padding=1)),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch, momentum=0.005),
+            weight_norm(nn.Conv2d(out_ch, out_ch, 3, padding=1)),
             nn.ReLU(inplace=True)
         )
 

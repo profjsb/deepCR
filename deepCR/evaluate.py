@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm as tqdm
 
 from deepCR.util import maskMetric
-from deepCR.dataset import dataset, DatasetSim
+from deepCR.dataset import dataset, DatasetSim, PairedDatasetImagePath
 from skimage.morphology import disk, dilation
 import astroscrappy.astroscrappy as lac
 
@@ -69,7 +69,7 @@ def _roc(model, data, thresholds, dilate=None):
     return (TPR * 100, FPR * 100), (TPR1 * 100, FPR1 * 100)
 
 
-def roc(model, image, mask, ignore=None, sky=None, n_mask=1, seed=1, thresholds=np.linspace(0.001, 0.999, 500),
+def roc(model, image, mask=None, ignore=None, mode='pair', sky=None, n_mask=1, seed=1, thresholds=np.linspace(0.001, 0.999, 500),
         dilate=False, rad=1):
     """ evaluate model on test set with the ROC curve
 
@@ -83,12 +83,17 @@ def roc(model, image, mask, ignore=None, sky=None, n_mask=1, seed=1, thresholds=
     kernel = None
     if dilate:
         kernel = disk(rad)
-    if type(image) == np.ndarray and len(image.shape) == 3:
-        data = dataset(image, mask, ignore)
-    elif type(image[0]) == str:
-        data = DatasetSim(image, mask, sky=sky, n_mask=n_mask, seed=seed)
+    if mode == 'pair':
+        if type(image) == np.ndarray and len(image.shape) == 3:
+            data = dataset(image, mask, ignore)
+        elif type(image[0]) == str or type(image[0]) == np.str_:
+            data = PairedDatasetImagePath(image, seed=seed)
+        else:
+            raise TypeError('Input must be numpy data arrays or list of file paths!')
+    elif mode == 'simulate':
+        print('simulate mode will be implemented')
     else:
-        raise TypeError('Input must be numpy data arrays or list of file paths!')
+        raise ValueError('Mode must be either pair or simulate')
     (tpr, fpr), (tpr_dilate, fpr_dilate) = _roc(model, data, thresholds=thresholds, dilate=kernel)
     if dilate:
         return (tpr, fpr), (tpr_dilate, fpr_dilate)
