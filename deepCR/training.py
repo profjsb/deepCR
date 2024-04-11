@@ -256,8 +256,13 @@ class train:
                 print('')
 
     def plot_example(self):
+<<<<<<< HEAD
         #plt.figure(figsize=(10, 30))
         plt.figure(figsize=(30,10))
+=======
+        #plt.figure(figsize=(10, 30))
+        plt.figure(figsize=(30,10))
+>>>>>>> 2c51489 (UVIS models/code update)
         plt.subplot(131)
         plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
         plt.title('epoch=%d' % self.epoch_mask)
@@ -296,7 +301,8 @@ class train:
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.title('Validation loss')
-        plt.show()
+        plt.savefig(self.directory+self.name+'trainplot.png')
+        #plt.show()
 
     def save(self):
         """ save trained network parameters to date_model_name_epoch*.pth
