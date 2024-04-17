@@ -6,18 +6,21 @@ Hubble ACS/WFC
 .. code-block:: python
 
     from deepCR import deepCR
-    model_cpu = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='CPU')
-    model_gpu = deepCR(mask='ACS-WFC-F606W-2-32', inpaint='ACS-WFC-F606W-2-32', device='GPU')
+    model_cpu = deepCR(mask=MODEL_NAME, inpaint='ACS-WFC-F606W-2-32', device='CPU') 
+    model_gpu = deepCR(mask=MODEL_NAME, inpaint='ACS-WFC-F606W-2-32', device='GPU')
 
-This model is trained on the f606w filter. Visual inspection shows that it also work well on sparser images taken in
-filters from F435W to F814W. However, there may be increased false detections in dense stellar fields for
-filters < f606w.
+``ACS-WFC-2-32`` model is trained with image sets from ACS/WFC F435W, F606W, F814W. Individual models are also available as ``ACS-WFC-F435W-2-32``, ``ACS-WFC-F606W-2-32``, ``ACS-WFC-F814W-2-32``. The global model was tested with all three filter test datasets to demonstrate that there is no significant performance gap between the global model and the individual models. Refer to the ROC curves below. The Y-axis denotes the true positive rate (TPR), and X-axis denotes the false positive rate (FPR). 
 
-Input images for the ACS/WFC model should come from *_flc.fits* files which are in units of electrons.
+Since the training and test datasets comprise images from three different fields (extragalactic field, globular cluster, resolved galaxy), the models were tested for each field. As shown, there is no significant discrepancy between individual models' performance and the global model. 
 
-We are currently working on a generic HST model that works with most imagers and filters.
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f435w_test.png
 
-.. image:: https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/acs_wfc_f606w_roc.png
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f606w_test.png
+
+.. image:: https://raw.githubusercontent.com/kgb0255/deepCR_james/master/imgs/acs_wfc.f814w_test.png
+
+To reproduce these plots, refer to this `page
+<https://github.com/kgb0255/deepCR-ACS-WFC_reproduction>`_.
 
 
 DECam

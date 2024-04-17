@@ -22,7 +22,7 @@ __all__ = ['deepCR']
 
 class deepCR():
 
-    def __init__(self, mask='ACS-WFC-F606W-2-32', inpaint=None, device='CPU', hidden=32):
+    def __init__(self, mask='ACS-WFC', inpaint=None, device='CPU', hidden=32):
 
         """
             Instantiation of deepCR with specified model configurations
@@ -88,8 +88,8 @@ class deepCR():
         self.median = None
         self.std = None
 
-    def clean(self, img0, threshold=0.5, inpaint=True, binary=True, segment=False,
-              patch=256, n_jobs=1):
+    def clean(self, img0, threshold=0.5, inpaint=False, binary=True, segment=True,
+              patch=1024, n_jobs=1):
         """
             Identify cosmic rays in an input image, and (optionally) inpaint with the predicted cosmic ray mask
         :param img0: (np.ndarray) 2D input image conforming to model requirements. For HST ACS/WFC, must be from
@@ -106,8 +106,6 @@ class deepCR():
         """
 
         # data pre-processing
-
-        inpaint = inpaint and binary
 
         img0 = img0.astype(np.float32) / self.scale
         img0 = img0.copy()
@@ -137,65 +135,46 @@ class deepCR():
             given input image
             return cosmic ray mask and (optionally) clean image
             mask could be binary or probabilistic
-        :param img0: (np.ndarray) 2D input image
+        :param img0: (np.ndarray) 2D input image with optional batch dimension
         :param threshold: for creating binary mask from probabilistic mask
         :param inpaint: return clean image only if True
         :param binary: return binary mask if True. probabilistic mask otherwise.
         :return: CR mask and (optionally) clean inpainted image
         """
 
+        # pad to be divisible by 4
         shape = img0.shape
-        pad_x = 4 - shape[0] % 4
-        pad_y = 4 - shape[1] % 4
-        if pad_x == 4:
-            pad_x = 0
-        if pad_y == 4:
-            pad_y = 0
+        pad_x = - shape[0] % 4
+        pad_y = - shape[1] % 4
         img0 = np.pad(img0, ((pad_x, 0), (pad_y, 0)), mode='constant')
 
-        shape = img0.shape[-2:]
-        img0 = from_numpy(img0).type(self.dtype).view(1, -1, shape[0], shape[1])
+        img0 = from_numpy(img0).type(self.dtype).view(1, 1, *img0.shape)
         mask = self.maskNet(img0)
-
-        if not binary:
-            return mask.detach().cpu().view(shape[0], shape[1]).numpy()[pad_x:, pad_y:]
-
         binary_mask = (mask > threshold).type(self.dtype)
+        if binary:
+            return_mask = binary_mask.detach().squeeze().cpu().numpy()[pad_x:, pad_y:]
+        else:
+            return_mask = mask.detach().squeeze().cpu().numpy()[pad_x:, pad_y:]
 
-        if inpaint:
+        if not inpaint:
+            return return_mask
+        else:
             if self.inpaintNet is not None:
                 cat = torch.cat((img0 * (1 - binary_mask), binary_mask), dim=1)
-                img1 = self.inpaintNet(cat)
-                img1 = img1.detach()
+                img1 = self.inpaintNet(cat).detach()
                 inpainted = img1 * binary_mask + img0 * (1 - binary_mask)
-                binary_mask = binary_mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                inpainted = inpainted.detach().cpu().view(shape[0], shape[1]).numpy()
+                inpainted = inpainted.detach().cpu().squeeze().numpy()
             else:
-                binary_mask = binary_mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                img0 = img0.detach().cpu().view(shape[0], shape[1]).numpy()
+                binary_mask = binary_mask.detach().cpu().squeeze().numpy()
+                img0 = img0.detach().cpu().squeeze().numpy()
                 img1 = medmask(img0, binary_mask)
                 inpainted = img1 * binary_mask + img0 * (1 - binary_mask)
-            if binary:
-                inpainted = inpainted[pad_x:, pad_y:]
-                if self.norm:
-                    inpainted *= self.std
-                    inpainted += self.median
-                return binary_mask[pad_x:, pad_y:], inpainted * self.scale
-            else:
-                mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                inpainted = inpainted[pad_x:, pad_y:]
-                if self.norm:
-                    inpainted *= self.std
-                    inpainted += self.median
-                return mask[pad_x:, pad_y:], inpainted * self.scale
+            if self.norm:
+                inpainted *= self.std
+                inpainted += self.median
 
-        else:
-            if binary:
-                binary_mask = binary_mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return binary_mask[pad_x:, pad_y:]
-            else:
-                mask = mask.detach().cpu().view(shape[0], shape[1]).numpy()
-                return mask[pad_x:, pad_y:]
+            return return_mask, inpainted[pad_x:, pad_y:] * self.scale
+
 
     def clean_large_parallel(self, img0, threshold=0.5, inpaint=True, binary=True,
                     patch=256, n_jobs=-1):

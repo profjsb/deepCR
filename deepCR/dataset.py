@@ -73,7 +73,7 @@ class DatasetSim(Dataset):
         cr_id = np.random.randint(0, self.len_mask, self.n_mask)
         crs = []; masks = []
         for i in cr_id:
-            arr = np.load(self.cr[i])
+            arr = np.load(self.cr[i]) if type(self.cr[i]) == str else self.cr[i]
             crs.append(arr[0][None,:])
             masks.append(arr[1][None,:])
         masks = np.concatenate(masks).sum(axis=0) > 0
@@ -81,7 +81,7 @@ class DatasetSim(Dataset):
         return crs, masks
 
     def get_image(self, i):
-        data = np.load(self.image[i])
+        data = np.load(self.image[i]) if type(self.image[i]) == str else self.image[i]
         if len(data.shape) == 3:
             return data[0], data[1]
         else:
