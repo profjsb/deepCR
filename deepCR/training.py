@@ -256,13 +256,7 @@ class train:
                 print('')
 
     def plot_example(self):
-<<<<<<< HEAD
-        #plt.figure(figsize=(10, 30))
         plt.figure(figsize=(30,10))
-=======
-        #plt.figure(figsize=(10, 30))
-        plt.figure(figsize=(30,10))
->>>>>>> 2c51489 (UVIS models/code update)
         plt.subplot(131)
         plt.imshow(np.log(self.img0[0, 0].detach().cpu().numpy()), cmap='gray')
         plt.title('epoch=%d' % self.epoch_mask)
