@@ -4,22 +4,23 @@
 ## deepCR: Deep Learning Based Cosmic Ray Removal for Astronomical Images
 
 Identify and remove cosmic rays from astronomical images using trained convolutional neural networks.
+Currently supports Hubble Space Telescope ACS-WFC and WFC3-UVIS cameras. 
 
 This package is implements the method described in the paper:
   > **deepCR: Cosmic Ray Rejection with Deep Learning**\
   > Keming Zhang & Joshua Bloom 2020\
   > _[Published in the Astrophysical Journal](https://iopscience.iop.org/article/10.3847/1538-4357/ab3fa6)\
   [arXiv:1907.09500](https://arxiv.org/abs/1907.09500)_
-  
-If you use this package, please cite the paper above and consider including a
-link to this repository.
+
+<img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
 
 [Documentation and tutorials](https://deepcr.readthedocs.io)
 
-[Currently available models](https://deepcr.readthedocs.io/en/latest/model_zoo.html)
+### Currently Available Models
 
+ACS-WFC: [Kwon, Zhang & Bloom 2021](https://iopscience.iop.org/article/10.3847/2515-5172/abf6c8/meta)
 
-<img src="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" wdith="90%">
+WFC3-UVIS: [Chen et al. 2024](https://iopscience.iop.org/article/10.3847/1538-4357/ad1602/meta) 
 
 
 ### Installation
@@ -38,61 +39,39 @@ pip install .
 
 ### Quick Start
 
-Quick download of a HST ACS/WFC image
+Quick download of a HST ACS/WFC and a WFC3/UVIS image
 
 ```bash
 wget -O jdba2sooq_flc.fits https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:HST/product/jdba2sooq_flc.fits
+wget -O ietx1ab1q_flc.fits https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:HST/product/ietx1ab1q_flc.fits
 ```
 
-With Python >=3.5:
-
-For smaller sized images (smaller than ~1Mpix)
 ```python
 from deepCR import deepCR
 from astropy.io import fits
 image = fits.getdata("jdba2sooq_flc.fits")[:512,:512]
 
-# create an instance of deepCR with specified model configuration
-mdl = deepCR(mask="ACS-WFC-F606W-2-32",
-	     inpaint="ACS-WFC-F606W-2-32",
-             device="CPU")
+# Create an instance of deepCR for ACS-WFC
+mdl = deepCR(mask="ACS-WFC")
+# mdl = deepCR(mask="WFC3-UVIS") for WFC3-UVIS
 
-# apply to input image
-mask, cleaned_image = mdl.clean(image, threshold = 0.5)
-# best threshold is highest value that generate mask covering full extent of CR
-# choose threshold by visualizing outputs.
+# Apply the model
+mask = mdl.clean(image, threshold = 0.5)
+# 0.5 threshold usually works for ACS/WFC
+# 0.1-0.2 for WFC3/UVIS (see Chen et al. 2024)
 
-# if you only need CR mask you may skip image inpainting and save time
-mask = mdl.clean(image, threshold = 0.5, inpaint=False)
-
-# if you want probabilistic cosmic ray mask instead of binary mask
+# Probabilistic mask could be helpful in determining threshold
 prob_mask = mdl.clean(image, binary=False)
+
+# Optional inpainting with median filtering
+mask, cleaned_image = mdl.clean(image, threshold = 0.5, inpaint=True)
 ```
 
-There's also the option to segment your input image into smaller pieces (default: 256-by-256)
-and process the individual piece seperately before stitching them back together. This enables
-multi-process parallelism and saves memory.
-
-Segment-and-stitching is enabled by **n_jobs>1**, which specified the number of processes to utilize.
-**n_jobs=-1** is the number of available virtual cores on your machine and is optimized for time
-when your torch is not intel MKL optimized (see below for more details). 
-```python
-image = fits.getdata("jdba2sooq_flc.fits")
-mask, cleaned_image = mdl.clean(image, threshold = 0.5, n_jobs=-1)
-
-```
-If your torch is intel MKL optimized, it's not necessary to open up many processes and one process
-should utilize half of the CPUs available. Monitor CPU usage -- if CPU usage for single process 
-is > 100% it means intel MKL is in place. In this case, ** n_jobs<=4** is advised. 
-
-For single process segment-and-stitching, you need to manually enable **segment = True** because 
-the default **n_jobs=1** assumes **segment = False**.
-```python
-image = fits.getdata("jdba2sooq_flc.fits")
-mask, cleaned_image = mdl.clean(image, threshold = 0.5, segment = True)
-```
-
-Note that this won't speed things up if you're using GPU!
+For larger images you may want to enable ``mdl.clean(..., segment=True, patch=512)`` option to prevent memory
+overflow. This option segment your input image into small squares of 512 by 512 for input into the model,
+where the CR masks are stitched back together. In this case,
+you may also enable multiprocessing by specifying ``n_jobs>1``. Note that this won't speed things up
+if you're using GPU!
 
 ### Contributing
 

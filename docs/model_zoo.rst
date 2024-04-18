@@ -52,7 +52,3 @@ other filters as well. We have benchmarked on g-band and r-band and are working 
 but only expect minor differences from the ROC curves above.
 
 Note 4: For extremely short or long exposures (t_exp < 10s or t_exp > 1800s), please visually verify mask output.
-
-Generic Ground Imaging
-^^^^^^^^^^^^^^^^^^^^^^
-Coming soon...
