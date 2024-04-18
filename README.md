@@ -17,10 +17,11 @@ This package is implements the method described in the paper:
 [Documentation and tutorials](https://deepcr.readthedocs.io)
 
 ### Currently Available Models
-```
-ACS-WFC: Supports all filters on HST ACS-WFC. Reference: [Kwon, Zhang & Bloom 2021](https://iopscience.iop.org/article/10.3847/2515-5172/abf6c8/meta).
-WFC3-UVIS: Supports all filters on WFC3-UVIS. Reference: [Chen et al. 2024](https://iopscience.iop.org/article/10.3847/1538-4357/ad1602/meta) 
-```
+
+ACS-WFC: [Kwon, Zhang & Bloom 2021](https://iopscience.iop.org/article/10.3847/2515-5172/abf6c8/meta)
+
+WFC3-UVIS: [Chen et al. 2024](https://iopscience.iop.org/article/10.3847/1538-4357/ad1602/meta) 
+
 
 ### Installation
 
