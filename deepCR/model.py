@@ -83,7 +83,7 @@ class deepCR():
             self.inpaintNet = None
 
         # Unused features to be implemented in a future version
-        self.norm = False
+        self.norm = True if mask == 'WFC3-UVIS' else False
         self.percentile = None
         self.median = None
         self.std = None
@@ -110,10 +110,8 @@ class deepCR():
         img0 = img0.astype(np.float32) / self.scale
         img0 = img0.copy()
         if self.norm:
-            limit = np.percentile(img0, self.percentile)
-            clip = img0[img0 < limit]
-            self.median = np.percentile(clip, 50)
-            self.std = clip.std()
+            self.median = img0.mean()
+            self.std = img0.std()
             img0 -= self.median
             img0 /= self.std
 
